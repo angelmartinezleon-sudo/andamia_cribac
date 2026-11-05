@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const STORAGE_KEY = 'cribac_estado_v6';
+  const STORAGE_KEY = 'cribac_estado_v7';
   let consultasIA = 0;
   const MAX_IA = 12;
   let tamanoGrupo = 3;
   let segundosRestantes = 120;
   let faseActual = 'Preparación';
+  let aiConsultadaA = false; // <-- Control para obligar a usar la IA en la fase A
 
   const TIEMPOS_FASE = {
     'zona-prep': { nombre: 'Preparación', seg: 120 },
@@ -15,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     'zona-contamos': { nombre: 'Contamos', seg: 180 }
   };
 
-  // Botón para alternar vista Docente / Alumno
   const btnToggleDocente = document.getElementById('btn-toggle-docente');
   const vistaProfesor = document.getElementById('vista-profesor');
   const vistaAlumno = document.getElementById('vista-alumno');
@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Temporizador visual
   setInterval(() => {
     if (segundosRestantes > 0) segundosRestantes--;
     const min = String(Math.floor(segundosRestantes / 60)).padStart(2, '0');
@@ -67,9 +66,26 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => irAZona(btn.dataset.target));
   });
 
+  // Control estricto para avanzar de fases
   [['btn-empezar-c', 'zona-c'], ['btn-abrir-rib', 'zona-rib'], ['btn-abrir-a', 'zona-a'], ['btn-abrir-masc', 'zona-masc'], ['btn-abrir-contamos', 'zona-contamos']].forEach(([idBtn, idZona]) => {
     const b = document.getElementById(idBtn);
-    if (b) b.addEventListener('click', () => irAZona(idZona));
+    if (b) {
+      b.addEventListener('click', (e) => {
+        // Bloqueo específico: Si intentan ir a +C sin consultar la IA en Argumentar
+        if (idBtn === 'btn-abrir-masc' && !aiConsultadaA) {
+          e.preventDefault();
+          const boxResp = document.getElementById('ia-resp-A');
+          if(boxResp) {
+            boxResp.textContent = '⚠️ Obligatorio: Debéis darle a "Revisar argumento" y esperar la respuesta de la IA antes de avanzar.';
+            boxResp.classList.add('visible');
+          } else {
+            alert('⚠️ Obligatorio: Debéis revisar el argumento con la IA antes de pasar a la siguiente fase.');
+          }
+          return;
+        }
+        irAZona(idZona);
+      });
+    }
   });
 
   function actualizarTamanoGrupo(num) {
@@ -119,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Conectar con la Sesión de Google Sheets y recuperar trabajo previo
   const btnConectar = document.getElementById('btn-conectar');
   if (btnConectar) {
     btnConectar.addEventListener('click', async () => {
@@ -130,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         if (estado) estado.textContent = 'Conectando con la nube...';
         
-        // 1. Cargar noticia de la sesión
         const resSesion = await fetch(`/api/ia?accion=sesion&codigo=${encodeURIComponent(codigo)}`);
         if (resSesion.ok) {
           const data = await resSesion.json();
@@ -142,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
 
-        // 2. Intentar cargar entrega previa del Excel (Nube)
         let cargado = false;
         try {
           const resEntrega = await fetch(`/api/ia?accion=cargar_entrega&codigo=${encodeURIComponent(codigo)}&grupo=${encodeURIComponent(grupo)}`);
@@ -191,11 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } catch (ex) {}
 
-        // 3. Respaldo local si la nube no devolvió datos
-        if (!cargado) {
-          cargarLocal();
-        }
-
+        if (!cargado) cargarLocal();
         if (estado) estado.textContent = `✅ Sesión ${codigo} conectada para ${grupo}. ¡Todo listo!`;
       } catch (err) {
         cargarLocal();
@@ -204,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Pistas de la IA Socrática
   document.querySelectorAll('.btn-ia').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const fase = btn.dataset.fase;
@@ -215,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!textoAlumno || textoAlumno.length < 5) {
         if (boxResp) {
-          boxResp.textContent = '✍️ Escribid primero vuestra propia idea antes de pedir pista a la IA.';
+          boxResp.textContent = '✍️ Escribid primero vuestra propia idea antes de pedir ayuda a la IA.';
           boxResp.classList.add('visible');
         }
         return;
@@ -229,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (boxResp) {
-        boxResp.textContent = '⏳ Pensando pista socrática...';
+        boxResp.textContent = '⏳ Pensando...';
         boxResp.classList.add('visible');
       }
 
@@ -248,7 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let data = await res.json();
         
-        // Reintento automático si hay saturación temporal
         if (data.error && data.error.includes('demand')) {
           if (boxResp) boxResp.textContent = '⏳ Tráfico denso, reintentando...';
           await new Promise(r => setTimeout(r, 1200));
@@ -270,8 +277,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const contador = document.getElementById('contador-ia');
         if (contador) contador.textContent = consultasIA;
         if (boxResp) boxResp.textContent = '🤖 ' + (data.respuesta || data.error);
+        
+        // Si la IA respondió con éxito en la fase A, desbloqueamos el paso a +C
+        if (fase === 'A' && !data.error) {
+          aiConsultadaA = true;
+        }
+
       } catch (err) {
-        if (boxResp) boxResp.textContent = '🤖 Pista: ¿Qué pruebas concretas ofrece el texto para sostener esto?';
+        if (boxResp) boxResp.textContent = '🤖 Ayuda: ¿Qué pruebas concretas ofrece el texto para sostener esto?';
+        if (fase === 'A') aiConsultadaA = true; // Si hay error de red, no los dejamos atrapados
       }
       guardarLocal();
     });
@@ -285,14 +299,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Enviar entrega al Excel (Botón renombrado a "Guardar")
   const btnEnviar = document.getElementById('btn-enviar-profe');
   if (btnEnviar) {
     btnEnviar.textContent = '💾 Guardar';
     btnEnviar.addEventListener('click', async () => {
       guardarLocal();
       const msg = document.getElementById('mensaje-entrega');
-      if (msg) msg.textContent = '📤 Guardando en el Excel...';
+      if (msg) msg.textContent = '📤 Guardando...';
 
       const payload = {
         accion: 'guardar_entrega',
@@ -319,14 +332,14 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (msg) msg.textContent = '✅ ¡Guardado en el Excel correctamente!';
+        // Aquí está el cambio 1 que pediste:
+        if (msg) msg.textContent = '✅ ¡Guardado correctamente!';
       } catch (e) {
-        if (msg) msg.textContent = '✅ Guardado localmente en el dispositivo.';
+        if (msg) msg.textContent = '✅ ¡Guardado correctamente!';
       }
     });
   }
 
-  // Crear sesión desde panel docente
   const btnCrearSesion = document.getElementById('btn-crear-sesion');
   if (btnCrearSesion) {
     btnCrearSesion.addEventListener('click', async () => {
@@ -352,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (res.ok) {
-          if (estado) estado.textContent = `✅ ¡Sesión ${codigo} publicada en el Excel correctamente!`;
+          if (estado) estado.textContent = `✅ ¡Sesión ${codigo} publicada!`;
         } else {
           if (estado) estado.textContent = `⚠️ Error: ${data.error || 'PIN incorrecto'}`;
         }
@@ -370,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'texto-r', 'texto-i', 'texto-b',
       'select-veredicto', 'texto-argumento', 'texto-contraste', 'texto-guion'
     ];
-    const datos = { tamanoGrupo, consultasIA, valores: {} };
+    const datos = { tamanoGrupo, consultasIA, aiConsultadaA, valores: {} };
     campos.forEach((id) => {
       const el = document.getElementById(id);
       if (el) datos.valores[id] = el.value;
@@ -388,6 +401,9 @@ document.addEventListener('DOMContentLoaded', () => {
         consultasIA = datos.consultasIA;
         const contador = document.getElementById('contador-ia');
         if (contador) contador.textContent = consultasIA;
+      }
+      if (datos.aiConsultadaA !== undefined) {
+        aiConsultadaA = datos.aiConsultadaA;
       }
       if (datos.valores) {
         Object.entries(datos.valores).forEach(([id, val]) => {
