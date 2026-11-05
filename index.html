@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CRIBA+C · Organizador de verificación (35 min)</title>
-  <link rel="stylesheet" href="/estilos.css" />
   <style>
     :root {
       --bg: #f8f6f0;
@@ -20,349 +19,92 @@
       --danger: #dc2626;
       --radius: 12px;
     }
-
     * { box-sizing: border-box; }
-
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
+      background-color: var(--bg); color: var(--text); line-height: 1.5;
     }
-
     .topbar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 12px 24px; position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
-
     .topbar-row {
-      max-width: 1040px;
-      margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      max-width: 1040px; margin: 0 auto; display: flex;
+      flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
     }
-
-    .brand {
-      font-size: 1.2rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-    .brand .c1 { color: #2563eb; }
-    .brand .c2 { color: #16a34a; }
-    .brand .c3 { color: #d97706; }
-    .brand .c4 { color: #9333ea; }
-
-    .nav-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-    }
-
+    .brand { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; }
+    .brand .c1 { color: #2563eb; } .brand .c2 { color: #16a34a; }
+    .brand .c3 { color: #d97706; } .brand .c4 { color: #9333ea; }
+    .nav-pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .pill {
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      background: #f1f5f9;
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.15s;
+      padding: 6px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600;
+      border: 1px solid var(--border); background: #f1f5f9; color: var(--text); cursor: pointer;
     }
-
-    .pill.active {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-    }
-
-    .pill:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
+    .pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     .timer-bar {
-      max-width: 1040px;
-      margin: 8px auto 0;
-      padding: 8px 14px;
-      background: #f1f5f9;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-weight: 600;
-      font-size: 0.9rem;
+      max-width: 1040px; margin: 8px auto 0; padding: 8px 14px; background: #f1f5f9;
+      border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 0.9rem;
     }
-
     .banner-ia {
-      max-width: 1040px;
-      margin: 14px auto 0;
-      padding: 10px 16px;
-      background: #fef3c7;
-      border: 1px solid #fde68a;
-      border-radius: 8px;
-      color: #92400e;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      max-width: 1040px; margin: 14px auto 0; padding: 10px 16px; background: #fef3c7;
+      border: 1px solid #fde68a; border-radius: 8px; color: #92400e; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: space-between;
     }
-
-    .container {
-      max-width: 1040px;
-      margin: 20px auto 60px;
-      padding: 0 16px;
-    }
-
+    .container { max-width: 1040px; margin: 20px auto 60px; padding: 0 16px; }
     .zona-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
     }
-
-    .zona-card.locked {
-      opacity: 0.6;
-      pointer-events: none;
-      filter: grayscale(0.2);
-    }
-
     .zona-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 2px solid #f1f5f9;
-      padding-bottom: 12px;
-      margin-bottom: 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 18px;
     }
-
-    .zona-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .zona-title { font-size: 1.3rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 10px; }
+    .badge-time { font-size: 0.8rem; padding: 4px 10px; border-radius: 999px; background: #e2e8f0; color: #334155; font-weight: 600; }
+    .noticia-box { background: #fffbeb; border: 2px solid #fde68a; border-radius: var(--radius); padding: 22px; margin-bottom: 24px; }
+    .noticia-titular { font-size: 1.4rem; font-weight: 800; color: #0f172a; margin: 0 0 8px 0; }
+    .noticia-entradilla { font-size: 1.05rem; color: #475569; font-weight: 500; margin-bottom: 14px; }
+    .noticia-cuerpo { background: #ffffff; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; white-space: pre-line; line-height: 1.65; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .subcard { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .subcard h4 { margin-top: 0; margin-bottom: 8px; color: #0f172a; }
+    label { display: block; font-weight: 600; font-size: 0.9rem; margin: 12px 0 6px; color: #334155; }
+    input[type="text"], input[type="number"], input[type="password"], input[type="url"], select, textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 0.95rem; font-family: inherit; background: #ffffff; color: var(--text);
     }
-
-    .badge-time {
-      font-size: 0.8rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #e2e8f0;
-      color: #334155;
-      font-weight: 600;
-    }
-
-    .noticia-box {
-      background: #fffbeb;
-      border: 2px solid #fde68a;
-      border-radius: var(--radius);
-      padding: 22px;
-      margin-bottom: 24px;
-    }
-
-    .noticia-titular {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin: 0 0 8px 0;
-    }
-
-    .noticia-entradilla {
-      font-size: 1.05rem;
-      color: #475569;
-      font-weight: 500;
-      margin-bottom: 14px;
-    }
-
-    .noticia-cuerpo {
-      background: #ffffff;
-      padding: 16px;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      white-space: pre-line;
-      line-height: 1.65;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-    }
-
-    .subcard {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
-    }
-
-    .subcard h4 {
-      margin-top: 0;
-      margin-bottom: 8px;
-      color: #0f172a;
-    }
-
-    label {
-      display: block;
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin: 12px 0 6px;
-      color: #334155;
-    }
-
-    input[type="text"],
-    input[type="number"],
-    input[type="password"],
-    input[type="url"],
-    select,
-    textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-family: inherit;
-      background: #ffffff;
-      color: var(--text);
-    }
-
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-    }
-
+    textarea { min-height: 90px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
     button, .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px 16px;
-      font-size: 0.92rem;
-      font-weight: 600;
-      font-family: inherit;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-      background: #f1f5f9;
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.15s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px 16px; font-size: 0.92rem; font-weight: 600; font-family: inherit;
+      border-radius: 8px; border: 1.5px solid var(--border); background: #f1f5f9; color: var(--text); cursor: pointer;
     }
-
-    button:hover, .btn:hover {
-      background: #e2e8f0;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-    }
-
-    .btn-primary:hover {
-      background: #334155;
-    }
-
-    .btn-ia {
-      background: var(--accent-soft);
-      color: #1d4ed8;
-      border-color: #93c5fd;
-    }
-
-    .btn-ia:hover {
-      background: #dbeafe;
-    }
-
-    .btn-success {
-      background: var(--success);
-      color: #ffffff;
-      border-color: var(--success);
-    }
-
-    .btn-success:hover {
-      background: #15803d;
-    }
-
-    .ia-response {
-      margin-top: 10px;
-      padding: 12px;
-      background: #eff6ff;
-      border-left: 4px solid #2563eb;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      color: #1e3a8a;
-      display: none;
-    }
-
-    .ia-response.visible {
-      display: block;
-    }
-
-    .actions-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-      align-items: center;
-    }
-
+    button:hover, .btn:hover { background: #e2e8f0; }
+    .btn-primary { background: var(--primary); color: #ffffff; border-color: var(--primary); }
+    .btn-ia { background: var(--accent-soft); color: #1d4ed8; border-color: #93c5fd; }
+    .btn-success { background: var(--success); color: #ffffff; border-color: var(--success); }
+    .ia-response { margin-top: 10px; padding: 12px; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px; font-size: 0.9rem; color: #1e3a8a; display: none; }
+    .ia-response.visible { display: block; }
+    .actions-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; align-items: center; }
     .hidden { display: none !important; }
-
-    /* Estilos específicos para el PDF / Impresión */
     @media print {
       body { background: #ffffff !important; color: #000000 !important; }
       .topbar, .banner-ia, button, .no-print, #vista-profesor { display: none !important; }
       .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-      .zona-card, .noticia-box, .subcard {
-        display: block !important;
-        opacity: 1 !important;
-        filter: none !important;
-        break-inside: avoid;
-        box-shadow: none !important;
-        border: 1px solid #94a3b8 !important;
-        margin-bottom: 14px !important;
-      }
-      textarea, input, select {
-        border: 1px solid #cbd5e1 !important;
-        background: #fff !important;
-      }
+      .zona-card, .noticia-box, .subcard { display: block !important; opacity: 1 !important; filter: none !important; break-inside: avoid; border: 1px solid #94a3b8 !important; margin-bottom: 14px !important; }
     }
   </style>
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR -->
   <header class="topbar">
     <div class="topbar-row">
       <div class="brand">
         <span class="c1">C</span><span class="c2">R·I·B</span><span class="c3">A</span><span class="c4">+C</span>
-        · Organizador de verificación (35 min)
       </div>
       <div class="nav-pills" id="nav-fases">
         <button type="button" class="pill active" data-target="zona-prep">Preparación</button>
@@ -372,77 +114,49 @@
         <button type="button" class="pill" data-target="zona-masc">+C · Contraste</button>
         <button type="button" class="pill" data-target="zona-contamos">Contamos</button>
       </div>
-      <div style="font-size: 0.85rem; font-weight: 700;">
-        Consultas IA: <span id="contador-ia">0</span>/12
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 0.85rem; font-weight: 700;">IA: <span id="contador-ia">0</span>/12</span>
+        <button type="button" id="btn-toggle-docente" class="pill" style="background:#0f172a; color:#fff;">🔒 Docente</button>
       </div>
     </div>
     <div class="timer-bar">
       <span id="timer-label">⏱️ Preparación: 02:00</span>
-      <span id="estado-guardado" style="font-size: 0.8rem; color: #475569;">Guardado automático en navegador y servidor</span>
+      <span style="font-size: 0.8rem; color: #475569;">CRIBA+C Activo</span>
     </div>
   </header>
 
-  <div class="banner-ia" id="banner-aviso">
-    <span>🤖 <strong>Aviso importante:</strong> Quien os responde es una IA socrática. No os dará la respuesta hecha: os hará preguntas para que penséis y comprobéis por vuestra cuenta.</span>
-    <button type="button" onclick="document.getElementById('banner-aviso').style.display='none'">✕</button>
-  </div>
-
-  <!-- CONTENEDOR ALUMNADO -->
   <main class="container" id="vista-alumno">
-
-    <!-- ZONA 0: PREPARACIÓN -->
     <section class="zona-card" id="zona-prep">
       <div class="zona-header">
         <h2 class="zona-title">Zona Preparación · Equipo y Roles</h2>
         <span class="badge-time">2 min</span>
       </div>
-
       <div class="grid-2">
         <div>
-          <label for="input-codigo">1. Código de sesión (4 letras)</label>
+          <label for="input-codigo">1. Código de sesión (ej. ESO3)</label>
           <input type="text" id="input-codigo" value="DEMO" maxlength="8" />
         </div>
         <div>
           <label for="select-grupo">Número de grupo (1 a 12)</label>
           <select id="select-grupo">
-            <option value="Grupo 1">Grupo 1</option>
-            <option value="Grupo 2">Grupo 2</option>
-            <option value="Grupo 3">Grupo 3</option>
-            <option value="Grupo 4">Grupo 4</option>
-            <option value="Grupo 5">Grupo 5</option>
-            <option value="Grupo 6">Grupo 6</option>
-            <option value="Grupo 7">Grupo 7</option>
-            <option value="Grupo 8">Grupo 8</option>
-            <option value="Grupo 9">Grupo 9</option>
-            <option value="Grupo 10">Grupo 10</option>
-            <option value="Grupo 11">Grupo 11</option>
-            <option value="Grupo 12">Grupo 12</option>
+            <option value="Grupo 1">Grupo 1</option><option value="Grupo 2">Grupo 2</option><option value="Grupo 3">Grupo 3</option><option value="Grupo 4">Grupo 4</option><option value="Grupo 5">Grupo 5</option><option value="Grupo 6">Grupo 6</option><option value="Grupo 7">Grupo 7</option><option value="Grupo 8">Grupo 8</option><option value="Grupo 9">Grupo 9</option><option value="Grupo 10">Grupo 10</option><option value="Grupo 11">Grupo 11</option><option value="Grupo 12">Grupo 12</option>
           </select>
         </div>
       </div>
-
       <div class="actions-row">
         <button type="button" class="btn-primary" id="btn-conectar">Conectar grupo</button>
-        <span id="estado-conexion" style="font-size: 0.9rem; color: #16a34a; font-weight: 600;">Listo (Sesión DEMO cargada)</span>
+        <span id="estado-conexion" style="font-size: 0.9rem; color: #16a34a; font-weight: 600;"></span>
       </div>
-
       <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;" />
-
       <label>2. ¿Cuántos sois en el grupo?</label>
       <div class="actions-row" style="margin-top: 6px;">
         <button type="button" id="btn-somos-2">👥 Somos dos</button>
         <button type="button" id="btn-somos-3" class="btn-primary">👥👤 Somos tres</button>
       </div>
-
-      <label style="margin-top: 18px;">3. Reparto de roles e iniciales (máximo 3 letras, nunca vuestro nombre completo)</label>
-      <p style="font-size: 0.9rem; color: #475569; margin: 4px 0 12px;">
-        📖 <strong>¡Todos sois lectores!</strong> Primero cada uno anota qué entiende al leer la noticia, luego acordáis qué dice en común, y después cada rol investiga su columna.
-      </p>
-
+      <label style="margin-top: 18px;">3. Reparto de roles e iniciales (máximo 3 letras)</label>
       <div class="actions-row" style="margin-bottom: 12px;">
         <button type="button" id="btn-azar">🎲 Repartir roles al azar</button>
       </div>
-
       <div class="grid-3">
         <div class="subcard">
           <label for="rol-r" id="label-rol-r">Analista del texto (Columna R · Portavoz)</label>
@@ -457,235 +171,156 @@
           <input type="text" id="rol-b" placeholder="Iniciales (ej. DLM)" maxlength="4" />
         </div>
       </div>
-
       <div class="actions-row" style="margin-top: 20px; justify-content: flex-end;">
         <button type="button" class="btn-primary" id="btn-empezar-c">Empezar C · Corazonada →</button>
       </div>
     </section>
 
-    <!-- ZONA 1: C · CORAZONADA (Solo titular y entradilla primero) -->
     <section class="zona-card" id="zona-c">
       <div class="zona-header">
-        <h2 class="zona-title"><span style="color:#2563eb;">C</span> · Corazonada (Impacto emocional)</h2>
+        <h2 class="zona-title"><span style="color:#2563eb;">C</span> · Corazonada</h2>
         <span class="badge-time">3 min</span>
       </div>
-
       <div class="noticia-box">
-        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #b45309; margin-bottom: 6px;">
-          Vista previa del titular y entradilla
-        </div>
-        <h3 class="noticia-titular" id="noticia-titular">
-          Un estudio afirma que escuchar música a doble velocidad mejora un 40 % las notas en Secundaria
-        </h3>
-        <div class="noticia-entradilla" id="noticia-entradilla">
-          Una publicación viral asegura que el cerebro adolescente procesa mejor los apuntes tras entrenar el oído con audios acelerados a 2x.
-        </div>
+        <h3 class="noticia-titular" id="noticia-titular">Un estudio afirma que escuchar música a doble velocidad mejora un 40 % las notas en Secundaria</h3>
+        <div class="noticia-entradilla" id="noticia-entradilla">Una publicación viral asegura que el cerebro adolescente procesa mejor los apuntes tras entrenar el oído con audios acelerados a 2x.</div>
       </div>
-
       <div class="grid-2">
         <div>
           <label for="select-emocion">1. ¿Qué primera emoción busca provocar este titular?</label>
           <select id="select-emocion">
-            <option value="">-- Elegid una emoción --</option>
+            <option value="">-- Elegid --</option>
             <option value="Sorpresa / Asombro">😲 Sorpresa / Asombro</option>
             <option value="Indignación / Enfado">😡 Indignación / Enfado</option>
             <option value="Miedo / Alarma">😨 Miedo / Alarma</option>
-            <option value="Esperanza / Deseo de que sea verdad">🤩 Esperanza / Deseo de que sea verdad</option>
-            <option value="Calma / Información neutra">😐 Calma / Información neutra</option>
+            <option value="Esperanza / Deseo de que sea verdad">🤩 Esperanza</option>
+            <option value="Calma / Información neutra">😐 Calma</option>
           </select>
         </div>
         <div>
-          <label for="select-impulso">2. ¿Cuál sería vuestro primer impulso en redes?</label>
+          <label for="select-impulso">2. ¿Cuál sería vuestro primer impulso?</label>
           <select id="select-impulso">
-            <option value="">-- Elegid reacción --</option>
-            <option value="Compartirlo enseguida">📲 Compartirlo enseguida sin leer más</option>
-            <option value="Creérmelo porque suena científico">🧪 Creérmelo porque dice "Un estudio afirma"</option>
-            <option value="Desconfiar y abrir la noticia">🧐 Desconfiar y leer el cuerpo completo antes</option>
+            <option value="">-- Elegid --</option>
+            <option value="Compartirlo enseguida">📲 Compartirlo enseguida</option>
+            <option value="Creérmelo porque suena científico">🧪 Creérmelo</option>
+            <option value="Desconfiar y abrir la noticia">🧐 Desconfiar y leer</option>
           </select>
         </div>
       </div>
-
-      <label for="texto-corazonada">3. ¿Por qué creéis que este titular llama tanto la atención? ¿Qué palabras os hacen sospechar o confiar?</label>
-      <textarea id="texto-corazonada" placeholder="Escribid aquí vuestra primera impresión tras leer solo el titular..."></textarea>
-
+      <label for="texto-corazonada">3. ¿Por qué creéis que este titular llama tanto la atención?</label>
+      <textarea id="texto-corazonada" placeholder="Escribid vuestra primera impresión..."></textarea>
       <div class="actions-row" style="justify-content: space-between;">
         <button type="button" class="btn-ia" data-fase="C" data-campo="texto-corazonada">💡 Pedir pista a la IA</button>
-        <button type="button" class="btn-primary" id="btn-abrir-rib">Desbloquear cuerpo de la noticia y pasar a R·I·B →</button>
+        <button type="button" class="btn-primary" id="btn-abrir-rib">Desbloquear cuerpo y pasar a R·I·B →</button>
       </div>
       <div class="ia-response" id="ia-resp-C"></div>
     </section>
 
-    <!-- CUERPO DE LA NOTICIA + ZONA 2: R·I·B -->
     <section class="zona-card" id="zona-rib">
       <div class="zona-header">
-        <h2 class="zona-title"><span style="color:#16a34a;">R · I · B</span> · Lectura y Verificación por Roles</h2>
+        <h2 class="zona-title"><span style="color:#16a34a;">R · I · B</span> · Lectura y Verificación</h2>
         <span class="badge-time">15 min</span>
       </div>
-
-      <!-- Cuerpo completo justo debajo de Corazonada -->
       <div class="noticia-box">
-        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #b45309; margin-bottom: 6px;">
-          Texto completo de la noticia para analizar
-        </div>
+        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #b45309; margin-bottom: 6px;">Texto completo de la noticia</div>
         <div class="noticia-cuerpo" id="noticia-cuerpo">Redacción (14 de marzo). Según circula desde ayer en varias cuentas de redes sociales y en el portal viral AulaExpress, escuchar canciones y pódcast al doble de velocidad (2x) durante veinte minutos al día incrementa hasta un 40 % el rendimiento en los exámenes de 3.º y 4.º de ESO.
 
-El texto cita al supuesto "Instituto Internacional de Neurovelocidad Aplicada", aunque no enlaza ningún artículo científico ni menciona qué investigadores dirigieron las pruebas ni con cuántos estudiantes se realizó la muestra. "Los profesores tradicionales no quieren que se sepa porque cambiaría su forma de dar clase", afirma un usuario anónimo citado en la noticia.
+El texto cita al supuesto "Instituto Internacional de Neurovelocidad Aplicada", aunque no enlaza ningún artículo científico.
 
-Al final del artículo se incluye un enlace promocional para descargar una aplicación de pago de entrenamiento auditivo rápido por 9,99 € al mes.</div>
-        <div style="margin-top: 10px; font-size: 0.85rem; color: #475569;">
-          🔗 Fuente declarada: <span id="noticia-enlace">https://ejemplo-noticias-aula.es/musica-doble-velocidad-notas</span>
-        </div>
+Al final del artículo se incluye un enlace promocional para descargar una aplicación de pago por 9,99 € al mes.</div>
+        <div style="margin-top: 10px; font-size: 0.85rem; color: #475569;">🔗 Fuente: <span id="noticia-enlace">https://ejemplo-noticias-aula.es/musica-doble-velocidad-notas</span></div>
       </div>
-
-      <!-- PASO PREVIO DE LECTURA INDIVIDUAL Y PUESTA EN COMÚN -->
       <div class="subcard" style="margin-bottom: 20px; background: #f0fdf4; border-color: #bbf7d0;">
-        <h4>📖 Paso 1: Todos leemos primero (Comprensión del texto)</h4>
-        <p style="font-size: 0.9rem; margin: 0 0 12px; color: #166534;">
-          Antes de investigar por separado, cada miembro lee la noticia y anota en una frase qué afirma el texto. Luego escribís vuestra síntesis común.
-        </p>
+        <h4>📖 Paso 1: Lectura individual y síntesis del grupo</h4>
         <div class="grid-3">
-          <div>
-            <label for="lectura-1">Notas de lectura · Lector 1 (R)</label>
-            <textarea id="lectura-1" placeholder="¿Qué dice la noticia según tú?"></textarea>
-          </div>
-          <div>
-            <label for="lectura-2">Notas de lectura · Lector 2 (I)</label>
-            <textarea id="lectura-2" placeholder="¿Qué dice la noticia según tú?"></textarea>
-          </div>
-          <div id="box-lectura-3">
-            <label for="lectura-3">Notas de lectura · Lector 3 (B)</label>
-            <textarea id="lectura-3" placeholder="¿Qué dice la noticia según tú?"></textarea>
-          </div>
+          <div><label for="lectura-1">Lector 1 (R)</label><textarea id="lectura-1" placeholder="¿Qué dice?"></textarea></div>
+          <div><label for="lectura-2">Lector 2 (I)</label><textarea id="lectura-2" placeholder="¿Qué dice?"></textarea></div>
+          <div id="box-lectura-3"><label for="lectura-3">Lector 3 (B)</label><textarea id="lectura-3" placeholder="¿Qué dice?"></textarea></div>
         </div>
-        <label for="sintesis-lectura">🤝 Acuerdo del grupo: ¿Qué afirma exactamente la noticia y qué pretende que hagamos?</label>
-        <textarea id="sintesis-lectura" placeholder="En resumen, la noticia afirma que... y al final intenta..."></textarea>
+        <label for="sintesis-lectura">🤝 Acuerdo del grupo sobre el texto:</label>
+        <textarea id="sintesis-lectura" placeholder="En resumen..."></textarea>
       </div>
-
-      <!-- PASO 2: COLUMNAS R, I, B -->
-      <h4 style="margin-bottom: 10px;">🔎 Paso 2: Investigación simultánea por columnas</h4>
+      <h4 style="margin-bottom: 10px;">🔎 Paso 2: Investigación por columnas</h4>
       <div class="grid-3">
-        <!-- Columna R -->
         <div class="subcard">
-          <h4>R · Redacción y Pruebas</h4>
-          <p style="font-size: 0.85rem; color: #475569;">Analiza el tono, si hay exageraciones, ataques o intereses ocultos (venta, clics) dentro del texto.</p>
-          <textarea id="texto-r" placeholder="¿Qué pistas dentro del texto hacen dudar? ¿Hay lenguaje exagerado o algún interés comercial al final?"></textarea>
+          <h4>R · Redacción</h4>
+          <textarea id="texto-r" placeholder="Tono, exageraciones..."></textarea>
           <button type="button" class="btn-ia" data-fase="R" data-campo="texto-r" style="margin-top: 8px; width: 100%;">💡 Pista IA (R)</button>
           <div class="ia-response" id="ia-resp-R"></div>
         </div>
-
-        <!-- Columna I -->
         <div class="subcard">
-          <h4>I · Investigar la Fuente</h4>
-          <p style="font-size: 0.85rem; color: #475569;">¿Quién publica esto? ¿Existe el instituto o autor que mencionan? ¿Aporta datos verificables?</p>
-          <textarea id="texto-i" placeholder="¿Qué sabemos de 'AulaExpress' y del 'Instituto Internacional de Neurovelocidad'? ¿Cita autores reales?"></textarea>
+          <h4>I · Fuente</h4>
+          <textarea id="texto-i" placeholder="Quién la publica..."></textarea>
           <button type="button" class="btn-ia" data-fase="I" data-campo="texto-i" style="margin-top: 8px; width: 100%;">💡 Pista IA (I)</button>
           <div class="ia-response" id="ia-resp-I"></div>
         </div>
-
-        <!-- Columna B -->
         <div class="subcard">
-          <h4>B · Buscar en otras fuentes</h4>
-          <p style="font-size: 0.85rem; color: #475569;">Salid de la noticia (lectura lateral): ¿qué dicen otros medios fiables o estudios reales sobre esto?</p>
-          <textarea id="texto-b" placeholder="Si buscamos fuera de esta noticia, ¿hay alguna universidad o medio serio que confirme ese 40 % de mejora?"></textarea>
+          <h4>B · Búsqueda externa</h4>
+          <textarea id="texto-b" placeholder="Lectura lateral..."></textarea>
           <button type="button" class="btn-ia" data-fase="B" data-campo="texto-b" style="margin-top: 8px; width: 100%;">💡 Pista IA (B)</button>
           <div class="ia-response" id="ia-resp-B"></div>
         </div>
       </div>
-
       <div class="actions-row" style="justify-content: flex-end; margin-top: 20px;">
-        <button type="button" class="btn-primary" id="btn-abrir-a">Pasar a A · Argumentar en grupo →</button>
+        <button type="button" class="btn-primary" id="btn-abrir-a">Pasar a A · Argumentar →</button>
       </div>
     </section>
 
-    <!-- ZONA 3: A · ARGUMENTAR -->
     <section class="zona-card" id="zona-a">
-      <div class="zona-header">
-        <h2 class="zona-title"><span style="color:#d97706;">A</span> · Argumentar y Veredicto</h2>
-        <span class="badge-time">7 min</span>
-      </div>
-
-      <label for="select-veredicto">1. Veredicto razonado del equipo</label>
+      <div class="zona-header"><h2 class="zona-title"><span style="color:#d97706;">A</span> · Argumentar</h2><span class="badge-time">7 min</span></div>
+      <label for="select-veredicto">1. Veredicto del equipo</label>
       <select id="select-veredicto">
-        <option value="">-- Seleccionad vuestro veredicto --</option>
-        <option value="Fiable y contrastada">✅ Fiable y bien contrastada con pruebas</option>
-        <option value="Dudosa / Exagerada (Clickbait)">⚠️ Dudosa o exagerada (faltan pruebas sólidas)</option>
-        <option value="Falsa / Engañosa con interés oculto">❌ Falsa o engañosa (bulo / reclamo comercial)</option>
+        <option value="">-- Seleccionad --</option>
+        <option value="Fiable y contrastada">✅ Fiable</option>
+        <option value="Dudosa / Exagerada (Clickbait)">⚠️ Dudosa / Clickbait</option>
+        <option value="Falsa / Engañosa con interés oculto">❌ Falsa / Bulo</option>
       </select>
-
-      <label for="texto-argumento">2. Argumentación conjunta (conectad las pruebas de R, I y B)</label>
-      <textarea id="texto-argumento" placeholder="Hemos llegado a la conclusión de que la noticia es... porque en el texto (R) vimos..., sobre la fuente (I) detectamos... y al buscar fuera (B) comprobamos que..."></textarea>
-
+      <label for="texto-argumento">2. Argumentación conjunta</label>
+      <textarea id="texto-argumento" placeholder="Conectad R, I y B..."></textarea>
       <div class="actions-row" style="justify-content: space-between;">
-        <button type="button" class="btn-ia" data-fase="A" data-campo="texto-argumento">🔍 Revisar solidez del argumento con IA</button>
-        <button type="button" class="btn-primary" id="btn-abrir-masc">Pasar a +C · Contraste →</button>
+        <button type="button" class="btn-ia" data-fase="A" data-campo="texto-argumento">🔍 Revisar argumento</button>
+        <button type="button" class="btn-primary" id="btn-abrir-masc">Pasar a +C →</button>
       </div>
       <div class="ia-response" id="ia-resp-A"></div>
     </section>
 
-    <!-- ZONA 4: +C · CONTRASTE Y COMPROMISO -->
     <section class="zona-card" id="zona-masc">
-      <div class="zona-header">
-        <h2 class="zona-title"><span style="color:#9333ea;">+C</span> · Contraste con nuestra Corazonada</h2>
-        <span class="badge-time">5 min</span>
-      </div>
-
-      <label for="texto-contraste">¿En qué ha cambiado vuestra idea inicial (Corazonada) tras aplicar R·I·B? ¿Qué consejo daríais a alguien antes de compartirla?</label>
-      <textarea id="texto-contraste" placeholder="Al principio sentimos... pero tras verificar las fuentes y las pruebas hemos descubierto que..."></textarea>
-
+      <div class="zona-header"><h2 class="zona-title"><span style="color:#9333ea;">+C</span> · Contraste</h2><span class="badge-time">5 min</span></div>
+      <label for="texto-contraste">¿En qué ha cambiado vuestra corazonada?</label>
+      <textarea id="texto-contraste" placeholder="Al principio..."></textarea>
       <div class="actions-row" style="justify-content: space-between;">
         <button type="button" class="btn-ia" data-fase="MASC" data-campo="texto-contraste">💡 Pista IA (+C)</button>
-        <button type="button" class="btn-primary" id="btn-abrir-contamos">Pasar a Contamos y Descargar PDF →</button>
+        <button type="button" class="btn-primary" id="btn-abrir-contamos">Pasar a Contamos →</button>
       </div>
       <div class="ia-response" id="ia-resp-MASC"></div>
     </section>
 
-    <!-- ZONA 5: CONTAMOS Y EXPORTACIÓN PDF -->
     <section class="zona-card" id="zona-contamos">
-      <div class="zona-header">
-        <h2 class="zona-title">📢 Contamos · Puesta en común y Entrega</h2>
-        <span class="badge-time">3 min</span>
-      </div>
-
-      <label for="texto-guion">Guion de 30 segundos para el portavoz del grupo</label>
-      <textarea id="texto-guion" placeholder="Hola, somos el grupo... Nuestro veredicto es... Las dos pruebas principales que lo demuestran son..."></textarea>
-
+      <div class="zona-header"><h2 class="zona-title">📢 Contamos · Entrega final</h2><span class="badge-time">3 min</span></div>
+      <label for="texto-guion">Guion de 30 segundos</label>
+      <textarea id="texto-guion" placeholder="Hola, somos..."></textarea>
       <div class="actions-row" style="margin-top: 20px;">
-        <button type="button" class="btn-success" id="btn-descargar-pdf" onclick="window.print()">📄 Descargar / Imprimir Informe en PDF</button>
-        <button type="button" class="btn-primary" id="btn-enviar-profe">📤 Guardar entrega final</button>
+        <button type="button" class="btn-success" id="btn-descargar-pdf">📄 Descargar PDF</button>
+        <button type="button" class="btn-primary" id="btn-enviar-profe">📤 Guardar entrega en Excel</button>
         <span id="mensaje-entrega" style="font-weight: 600; color: #16a34a;"></span>
       </div>
     </section>
-
   </main>
 
-  <!-- PANEL PROFESOR (?vista=profesor) -->
+  <!-- PANEL PROFESOR -->
   <section class="container hidden" id="vista-profesor">
-    <div class="zona-card">
+    <div class="zona-card" style="border: 2px solid #2563eb;">
       <h2>🔒 Panel Docente · Configurar Noticia y Sesión</h2>
       <div class="grid-2">
-        <div>
-          <label for="profe-pin">PIN de Profesor</label>
-          <input type="password" id="profe-pin" placeholder="Introduce tu PIN (ej. 1234)" />
-        </div>
-        <div>
-          <label for="profe-codigo">Código de sesión para la clase</label>
-          <input type="text" id="profe-codigo" value="AULA" maxlength="8" />
-        </div>
+        <div><label for="profe-pin">PIN de Profesor</label><input type="password" id="profe-pin" placeholder="PIN (ej. 1234)" /></div>
+        <div><label for="profe-codigo">Código para la clase (ej. ESO3)</label><input type="text" id="profe-codigo" value="ESO3" maxlength="8" /></div>
       </div>
-      <label for="profe-titular">Titular de la noticia</label>
-      <input type="text" id="profe-titular" placeholder="Titular..." />
-
-      <label for="profe-entradilla">Entradilla / Subtítulo</label>
-      <input type="text" id="profe-entradilla" placeholder="Entradilla..." />
-
-      <label for="profe-cuerpo">Cuerpo completo de la noticia</label>
-      <textarea id="profe-cuerpo" placeholder="Pega aquí el texto de la noticia..."></textarea>
-
-      <label for="profe-enlace">Fuente o URL declarada</label>
-      <input type="text" id="profe-enlace" placeholder="https://..." />
-
+      <label for="profe-titular">Titular</label><input type="text" id="profe-titular" placeholder="Titular..." />
+      <label for="profe-entradilla">Entradilla</label><input type="text" id="profe-entradilla" placeholder="Entradilla..." />
+      <label for="profe-cuerpo">Cuerpo completo de la noticia</label><textarea id="profe-cuerpo" placeholder="Pega el texto..."></textarea>
+      <label for="profe-enlace">Fuente / URL</label><input type="text" id="profe-enlace" placeholder="https://..." />
       <div class="actions-row">
-        <button type="button" class="btn-primary" id="btn-crear-sesion">Guardar y activar sesión para los alumnos</button>
+        <button type="button" class="btn-primary" id="btn-crear-sesion">Guardar noticia en Excel</button>
         <span id="profe-estado" style="font-weight: 600; color: #16a34a;"></span>
       </div>
     </div>
