@@ -62,7 +62,6 @@ export default async function handler(req, res) {
     }
 
     const apiKey = process.env.AI_API_KEY;
-    const modelName = process.env.AI_MODEL || 'gemini-1.5-flash';
     if (!apiKey) return res.status(500).json({ error: 'Falta AI_API_KEY' });
 
     const { fase, textoAlumno, cuerpo, titular } = body;
@@ -79,7 +78,8 @@ Respuesta del alumno: "${textoAlumno}"
 Instrucción estricta: No digas si es verdad o mentira ni des la respuesta hecha. Hazle una pregunta socrática corta y directa (para alumnos de 15 años) que le haga pensar críticamente sobre lo que acaba de escribir.`;
 
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+      // Ruta universal forzada con -latest para evitar errores de API
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
