@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRIBA+C · Organizador de Verificación de Noticias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/estilos.css" />
+</head>
+<body>
+
+  <!-- CABECERA FIJA ACCESIBLE -->
+  <header class="cabecera-sticky sticky top-0 z-40 bg-white border-b-2 border-slate-300 px-4 py-2.5 shadow-sm" role="banner">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-baseline gap-2">
+        <span class="text-2xl sm:text-3xl font-bold tracking-tight" aria-label="CRIBA más C">
+          <span class="l-c">C</span><span class="l-r">R</span><span class="l-i">I</span><span class="l-b">B</span><span class="l-a">A</span><span class="l-masc">+C</span>
+        </span>
+        <span class="text-xs sm:text-sm text-slate-600 hidden md:inline">Organizador de verificación (35 min)</span>
+      </div>
+
+      <nav id="barraProgresoAlumno" class="flex flex-wrap items-center gap-1" aria-label="Progreso por zonas">
+        <span class="paso-progreso activo" data-paso="prep">Preparación</span>
+        <span class="text-slate-400">·</span>
+        <span class="paso-progreso" data-paso="c"><strong>C</strong> Corazonada</span>
+        <span class="text-slate-400">·</span>
+        <span class="paso-progreso" data-paso="rib"><strong>R·I·B</strong></span>
+        <span class="text-slate-400">·</span>
+        <span class="paso-progreso" data-paso="a"><strong>A</strong> Argumentar</span>
+        <span class="text-slate-400">·</span>
+        <span class="paso-progreso" data-paso="masC"><strong>+C</strong> Contraste</span>
+        <span class="text-slate-400">·</span>
+        <span class="paso-progreso" data-paso="contamos">Contamos</span>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <div class="text-xs font-bold bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg text-slate-700">
+          Consultas IA: <span id="contadorGlobalIA">0</span>/12
+        </div>
+        <div id="relojGlobal" class="reloj-normal px-3 py-1 rounded-lg font-bold text-sm flex items-center gap-1.5" aria-live="polite">
+          <span>⏱️</span>
+          <span id="etiquetaTiempoZona">Preparación: 02:00</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NOTIFICACIÓN TOAST ACCESIBLE -->
+  <div id="toastNotificacion" class="hidden fixed bottom-5 right-5 z-50 max-w-md bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border-l-4 border-amber-400" role="status" aria-live="polite">
+    <div class="flex items-start justify-between gap-3">
+      <p id="toastMensaje" class="text-sm font-bold m-0"></p>
+      <button type="button" id="btnCerrarToast" class="text-slate-300 hover:text-white text-xs px-2 py-0.5">✕</button>
+    </div>
+  </div>
+
+  <!-- VISTA DEL ALUMNO (PÁGINA ÚNICA) -->
+  <main id="vistaAlumno" class="max-w-7xl mx-auto px-3 sm:px-5 py-5">
+    <div class="bg-slate-200/80 border-l-4 border-slate-700 px-4 py-2.5 rounded-lg mb-5 flex items-center justify-between flex-wrap gap-2" role="note">
+      <p class="m-0 text-sm sm:text-base">
+        🤖 <strong>Aviso importante:</strong> Quien os responde es una IA. Puede equivocarse: comprobad lo que dice.
+      </p>
+      <span class="text-xs text-slate-600 font-bold">Guardado automático en servidor y navegador</span>
+    </div>
+
+    <!-- ZONA PREPARACIÓN -->
+    <section id="zona-prep" class="zona-tarjeta">
+      <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+        <h2 class="titulo-zona">Zona Preparación <span class="text-xs font-normal bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full border border-slate-300">2 min</span></h2>
+        <span id="badgeEstadoSesion" class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">Listo para conectar</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+        <div>
+          <label for="inputCodigoSesion" class="block font-bold mb-1 text-sm">1. Código de sesión (4 letras)</label>
+          <input type="text" id="inputCodigoSesion" value="DEMO" maxlength="6" class="uppercase font-bold tracking-wider" />
+        </div>
+        <div>
+          <label for="selectNumeroGrupo" class="block font-bold mb-1 text-sm">Número de grupo (1 a 12)</label>
+          <select id="selectNumeroGrupo">
+            <option value="1">Grupo 1</option><option value="2">Grupo 2</option><option value="3">Grupo 3</option><option value="4">Grupo 4</option>
+            <option value="5">Grupo 5</option><option value="6">Grupo 6</option><option value="7">Grupo 7</option><option value="8">Grupo 8</option>
+            <option value="9">Grupo 9</option><option value="10">Grupo 10</option><option value="11">Grupo 11</option><option value="12">Grupo 12</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button type="button" id="btnConectarSesion" class="w-full bg-blue-700 hover:bg-blue-800 text-white">Conectar grupo</button>
+        </div>
+      </div>
+
+      <div class="text-center my-5 py-5 px-4 bg-amber-50/60 border-2 border-amber-200 rounded-xl">
+        <p class="text-xl sm:text-2xl font-bold mb-3">2. ¿Cuántos sois en el grupo?</p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <button type="button" id="btnSomosDos" class="btn-opcion min-w-[170px] text-lg py-3 px-6">👥 Somos dos</button>
+          <button type="button" id="btnSomosTres" class="btn-opcion activo min-w-[170px] text-lg py-3 px-6">👥👤 Somos tres</button>
+        </div>
+        <p class="text-xs text-slate-600 mt-2 mb-0">Se puede corregir mientras no se haya empezado la zona C · Corazonada.</p>
+      </div>
+
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="font-bold text-base m-0">3. Reparto de roles e iniciales (máximo 3 caracteres, nunca vuestro nombre completo)</h3>
+            <p class="text-xs font-bold text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded inline-block my-1">
+              📖 ¡Todos sois lectores! Primero leéis y acordáis juntos qué dice la noticia, y luego cada rol investiga su columna.
+            </p>
+            <p id="subtituloAdaptacionRoles" class="text-xs text-slate-600 m-0">Tres integrantes: Analista del texto (R), Rastreador de fuentes (I) y Contrastador externo (B).</p>
+          </div>
+          <button type="button" id="btnRepartirAzar" class="bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-400 text-sm">🎲 Repartir al azar</button>
+        </div>
+        <div id="contenedorInputsRoles" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+      </div>
+
+      <div class="flex justify-end">
+        <button type="button" id="btnCompletarPrep" class="bg-blue-700 hover:bg-blue-800 text-white px-6">Confirmar equipo y abrir C · Corazonada →</button>
+      </div>
+    </section>
+
+    <!-- ZONA NOTICIA (PRIMER VISTAZO) -->
+    <section id="zona-noticia" class="zona-tarjeta border-l-8 border-l-amber-600">
+      <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-800">📰 1. Primer vistazo antes de la Corazonada</span>
+        <span class="text-xs font-bold bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full">Solo titular y subtítulo</span>
+      </div>
+      <h2 id="noticiaTitular" class="text-xl sm:text-2xl font-bold my-2 text-slate-900">Cargando noticia...</h2>
+      <p id="noticiaEntradilla" class="text-slate-600 italic mb-3"></p>
+      <div id="contenedorImagenNoticia" class="mb-3 hidden"><img id="noticiaImagen" src="" alt="Imagen" class="max-h-64 rounded-lg border border-slate-300" /></div>
+      <div class="bg-amber-50 border border-amber-300 text-amber-900 px-3.5 py-2 rounded-lg text-sm mt-2">
+        👇 Observad solo este titular y responded justo debajo a la <strong>Zona C · Corazonada</strong>. Al terminarla, la noticia completa aparecerá más abajo.
+      </div>
+    </section>
+
+    <!-- ZONA C · CORAZONADA -->
+    <section id="zona-c" class="zona-tarjeta bloqueada">
+      <div class="candado-overlay" id="candado-c"><span class="candado-etiqueta">🔒 Se abre cuando terminéis Preparación</span></div>
+      <div class="mb-4">
+        <h2 class="titulo-zona"><span class="letra-acronimo l-c">C</span> · Corazonada <span class="text-xs font-normal bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300">3 min · Sin IA</span></h2>
+        <p class="text-slate-600 text-sm m-0">Con solo haber visto el titular de arriba, completad una tarjeta por cada miembro del grupo.</p>
+      </div>
+      <div id="contenedorTarjetasCorazonada" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"></div>
+      <div class="flex justify-end">
+        <button type="button" id="btnCompletarC" class="bg-amber-700 hover:bg-amber-800 text-white px-6">Desbloquear noticia completa abajo y abrir R·I·B ↓</button>
+      </div>
+    </section>
+
+    <!-- ZONA R·I·B -->
+    <section id="zona-rib" class="zona-tarjeta bloqueada">
+      <div class="candado-overlay" id="candado-rib"><span class="candado-etiqueta">🔒 Se abre cuando terminéis C · Corazonada</span></div>
+      <div class="mb-4">
+        <h2 class="titulo-zona">Zona <span class="letra-acronimo l-r">R</span>·<span class="letra-acronimo l-i">I</span>·<span class="letra-acronimo l-b">B</span> <span class="text-xs font-normal bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full border border-slate-300">15 min</span></h2>
+        <p class="text-slate-600 text-sm m-0">Leed la noticia completa aquí mismo. Después, cada persona anota sus ideas individuales antes de hacer la síntesis común.</p>
+      </div>
+
+      <!-- NOTICIA COMPLETA ABAJO -->
+      <div class="bg-white border-2 border-slate-700 border-l-8 border-l-slate-800 rounded-xl p-4 mb-5 shadow-sm">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-600">📖 2. Noticia completa desbloqueada para leer</span>
+          <span class="text-xs font-bold bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-full">Texto íntegro + Enlace original</span>
+        </div>
+        <h3 id="noticiaTitularAbajo" class="text-lg sm:text-xl font-bold my-1.5 text-slate-900">...</h3>
+        <p id="noticiaEntradillaAbajo" class="text-slate-600 italic text-sm mb-2.5"></p>
+        <div id="contenedorImagenNoticiaAbajo" class="mb-3 hidden"><img id="noticiaImagenAbajo" src="" alt="Imagen" class="max-h-56 rounded-lg border border-slate-300" /></div>
+        <div id="noticiaCuerpo" class="bg-slate-50 p-3.5 rounded-lg border border-slate-200 text-slate-800 leading-relaxed mb-2.5">...</div>
+        <p class="text-sm m-0"><strong>Enlace al original:</strong> <a id="noticiaEnlace" href="#" target="_blank" rel="noopener noreferrer" class="text-blue-700 underline font-bold break-all">...</a></p>
+      </div>
+
+      <!-- PASO 1: LECTURA INDIVIDUAL -> SÍNTESIS -->
+      <div class="bg-amber-50/70 border-2 border-slate-400 rounded-xl p-4 mb-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-300">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="bg-slate-800 text-white text-xs font-bold px-2.5 py-1 rounded uppercase tracking-wider">Paso 1 · Todos lectores</span>
+            <h3 class="font-bold text-base m-0 text-slate-900">1A. Primero cada persona escribe qué ideas ha sacado de la lectura</h3>
+          </div>
+          <span id="badgeLectoresComun" class="text-xs font-bold text-slate-700 bg-white px-2.5 py-1 rounded border border-slate-300">Lectores: Todos</span>
+        </div>
+        <div id="contenedorLecturaIndividual" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4"></div>
+
+        <div id="cajaSintesisComun" class="bg-white border-2 border-slate-300 rounded-xl p-3.5 opacity-50 pointer-events-none">
+          <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+            <h4 class="font-bold text-sm m-0 text-slate-900">🤝 1B. Puesta en común: Redactad el resumen del grupo</h4>
+            <span id="estadoDesbloqueoSintesis" class="text-xs font-bold bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full">🔒 Esperando a que cada miembro escriba sus ideas arriba</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="rFrase" class="block font-bold text-sm mb-1">1. Resumen en una frase <span id="contadorPalabrasR" class="text-xs font-normal text-slate-600">(0 / 30 palabras)</span></label>
+              <textarea id="rFrase" rows="2" placeholder="Resumid en una frase..."></textarea>
+            </div>
+            <div>
+              <label for="rAfirmacion" class="block font-bold text-sm mb-1">2. La afirmación principal que hay que comprobar</label>
+              <textarea id="rAfirmacion" rows="2" placeholder="¿Qué cifra o hecho afirma la noticia?"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <!-- COLUMNA R -->
+        <article class="col-r">
+          <header class="flex items-start justify-between gap-2 pb-2.5 mb-3 border-b border-blue-200">
+            <div class="flex items-center gap-2">
+              <span class="letra-acronimo l-r">R</span>
+              <div>
+                <h3 class="font-bold text-base m-0 text-blue-950">Radiografiar el texto</h3>
+                <span class="text-xs text-blue-800">Analista del texto (portavoz)</span>
+              </div>
+            </div>
+            <span id="badgeRolR" class="bg-white border border-blue-400 text-blue-900 font-bold text-xs px-2.5 py-1 rounded-md">---</span>
+          </header>
+          <div class="mb-3">
+            <label for="rPistasTexto" class="block font-bold text-sm mb-1">Palabras trampa, tono o expresiones exageradas</label>
+            <textarea id="rPistasTexto" rows="2" placeholder="¿Usa adjetivos exagerados o promesas gancho?"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="rPruebasFaltan" class="block font-bold text-sm mb-1">¿Qué pruebas o datos concretos faltan?</label>
+            <textarea id="rPruebasFaltan" rows="2" placeholder="¿Qué detalles no explica el texto?"></textarea>
+          </div>
+          <div class="mb-3">
+            <span class="block font-bold text-sm mb-1">¿Es información u opinión?</span>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" class="btn-opcion btn-toggle-campo text-sm" data-campo="r_tipo" data-valor="Información">Información</button>
+              <button type="button" class="btn-opcion btn-toggle-campo text-sm" data-campo="r_tipo" data-valor="Opinión">Opinión</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button type="button" id="btnPistaR" class="bg-slate-700 text-white text-sm">💡 Pista (<span id="contPistasR">3</span>)</button>
+            <button type="button" id="btnRevisarR" class="bg-slate-700 text-white text-sm">🔍 Revisar (<span id="contRevR">1</span>)</button>
+          </div>
+          <p id="ayudaValidacionR" class="text-xs text-amber-800 font-bold mt-1.5 mb-0 min-h-[1.2rem]"></p>
+          <div id="bocadilloIAR" class="bocadillo-ia hidden" aria-live="polite">
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-1.5"><span class="rotulo-ia">IA</span><span class="text-xs font-bold">Tutor de lectura</span></div>
+              <span id="tipoRespuestaIAR" class="text-xs text-slate-500"></span>
+            </div>
+            <p id="textoIAR" class="text-sm m-0 mb-2.5"></p>
+            <button type="button" class="btn-error-ia bg-white border border-slate-400 text-xs py-1 px-2.5" data-col="R">⚠️ Creemos que la IA se equivoca</button>
+            <div id="cajaErrorIAR" class="hidden mt-2 pt-2 border-t border-dashed border-slate-400">
+              <input type="text" id="inputErrorIAR" maxlength="140" placeholder="Explicad por qué..." class="text-xs min-h-[36px] mb-1.5" />
+              <button type="button" class="btn-guardar-error bg-slate-800 text-white text-xs px-3 py-1" data-col="R">Guardar</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- COLUMNA I -->
+        <article class="col-i">
+          <header class="flex items-start justify-between gap-2 pb-2.5 mb-3 border-b border-orange-200">
+            <div class="flex items-center gap-2">
+              <span class="letra-acronimo l-i">I</span>
+              <div>
+                <h3 class="font-bold text-base m-0 text-orange-950">Investigar la fuente</h3>
+                <span class="text-xs text-orange-900">Rastreador (guardián del tiempo)</span>
+              </div>
+            </div>
+            <span id="badgeRolI" class="bg-white border border-orange-400 text-orange-900 font-bold text-xs px-2.5 py-1 rounded-md">---</span>
+          </header>
+          <div class="mb-3">
+            <label for="iFirma" class="block font-bold text-sm mb-1">Quién firma y en qué medio</label>
+            <textarea id="iFirma" rows="2" placeholder="Autor/a, Redacción o agencia y medio..."></textarea>
+          </div>
+          <div class="mb-3" id="bloqueIFecha">
+            <label for="iFecha" class="block font-bold text-sm mb-1">Fecha y actualización</label>
+            <textarea id="iFecha" rows="2" placeholder="Fecha y si se ha actualizado..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="iFuenteOriginal" class="block font-bold text-sm mb-1">¿Cita la fuente original?</label>
+            <textarea id="iFuenteOriginal" rows="2" placeholder="¿Nombra o enlaza el estudio u organismo?"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button type="button" id="btnPistaI" class="bg-slate-700 text-white text-sm">💡 Pista (<span id="contPistasI">3</span>)</button>
+            <button type="button" id="btnRevisarI" class="bg-slate-700 text-white text-sm">🔍 Revisar (<span id="contRevI">1</span>)</button>
+          </div>
+          <p id="ayudaValidacionI" class="text-xs text-amber-800 font-bold mt-1.5 mb-0 min-h-[1.2rem]"></p>
+          <div id="bocadilloIAI" class="bocadillo-ia hidden" aria-live="polite">
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-1.5"><span class="rotulo-ia">IA</span><span class="text-xs font-bold">Tutor de fuentes</span></div>
+              <span id="tipoRespuestaIAI" class="text-xs text-slate-500"></span>
+            </div>
+            <p id="textoIAI" class="text-sm m-0 mb-2.5"></p>
+            <button type="button" class="btn-error-ia bg-white border border-slate-400 text-xs py-1 px-2.5" data-col="I">⚠️ Creemos que la IA se equivoca</button>
+            <div id="cajaErrorIAI" class="hidden mt-2 pt-2 border-t border-dashed border-slate-400">
+              <input type="text" id="inputErrorIAI" maxlength="140" placeholder="Explicad por qué..." class="text-xs min-h-[36px] mb-1.5" />
+              <button type="button" class="btn-guardar-error bg-slate-800 text-white text-xs px-3 py-1" data-col="I">Guardar</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- COLUMNA B -->
+        <article class="col-b">
+          <header class="flex items-start justify-between gap-2 pb-2.5 mb-3 border-b border-green-200">
+            <div class="flex items-center gap-2">
+              <span class="letra-acronimo l-b">B</span>
+              <div>
+                <h3 class="font-bold text-base m-0 text-green-950">Buscar otras fuentes</h3>
+                <span class="text-xs text-green-900">Contrastador (escriba)</span>
+              </div>
+            </div>
+            <span id="badgeRolB" class="bg-white border border-green-500 text-green-900 font-bold text-xs px-2.5 py-1 rounded-md">---</span>
+          </header>
+          <div class="bg-white border-l-4 border-l-blue-700 p-2.5 rounded-md mb-3 shadow-sm">
+            <span class="block text-xs font-bold text-blue-800">Afirmación del grupo (en directo):</span>
+            <p id="espejoAfirmacionR" class="text-sm font-bold text-slate-800 m-0">Esperando afirmación en Paso 1</p>
+          </div>
+          <div class="mb-3">
+            <label for="bOtraFuente" class="block font-bold text-sm mb-1">Otra fuente independiente</label>
+            <textarea id="bOtraFuente" rows="2" placeholder="Verificador, medio u organismo oficial y enlace..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="bQueDice" class="block font-bold text-sm mb-1">Qué dice sobre la afirmación</label>
+            <textarea id="bQueDice" rows="2" placeholder="¿Qué pruebas aporta esta fuente?"></textarea>
+          </div>
+          <div class="mb-3">
+            <span class="block font-bold text-sm mb-1">¿Coincide?</span>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" class="btn-opcion btn-toggle-campo text-sm" data-campo="b_coincide" data-valor="Sí">Sí</button>
+              <button type="button" class="btn-opcion btn-toggle-campo text-sm" data-campo="b_coincide" data-valor="En parte">En parte</button>
+              <button type="button" class="btn-opcion btn-toggle-campo text-sm" data-campo="b_coincide" data-valor="No">No</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button type="button" id="btnPistaB" class="bg-slate-700 text-white text-sm">💡 Pista (<span id="contPistasB">3</span>)</button>
+            <button type="button" id="btnRevisarB" class="bg-slate-700 text-white text-sm">🔍 Revisar (<span id="contRevB">1</span>)</button>
+          </div>
+          <p id="ayudaValidacionB" class="text-xs text-amber-800 font-bold mt-1.5 mb-0 min-h-[1.2rem]"></p>
+          <div id="bocadilloIAB" class="bocadillo-ia hidden" aria-live="polite">
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-1.5"><span class="rotulo-ia">IA</span><span class="text-xs font-bold">Tutor de búsqueda</span></div>
+              <span id="tipoRespuestaIAB" class="text-xs text-slate-500"></span>
+            </div>
+            <p id="textoIAB" class="text-sm m-0 mb-2.5"></p>
+            <button type="button" class="btn-error-ia bg-white border border-slate-400 text-xs py-1 px-2.5" data-col="B">⚠️ Creemos que la IA se equivoca</button>
+            <div id="cajaErrorIAB" class="hidden mt-2 pt-2 border-t border-dashed border-slate-400">
+              <input type="text" id="inputErrorIAB" maxlength="140" placeholder="Explicad por qué..." class="text-xs min-h-[36px] mb-1.5" />
+              <button type="button" class="btn-guardar-error bg-slate-800 text-white text-xs px-3 py-1" data-col="B">Guardar</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <button type="button" id="btnCompletarRIB" class="bg-emerald-700 hover:bg-emerald-800 text-white px-6">Unir hallazgos y abrir A · Argumentar →</button>
+      </div>
+    </section>
+
+    <!-- CONECTORES VISUALES HACIA A -->
+    <div class="conectores-rib-a" aria-hidden="true">
+      <div class="linea-conectora lc-r"></div><div class="linea-conectora lc-i"></div><div class="linea-conectora lc-b"></div>
+    </div>
+
+    <!-- ZONA A · ARGUMENTAR -->
+    <section id="zona-a" class="zona-tarjeta bloqueada border-2 border-purple-700 bg-purple-50/60">
+      <div class="candado-overlay" id="candado-a"><span class="candado-etiqueta">🔒 Se abre cuando terminéis R·I·B</span></div>
+      <div class="mb-4">
+        <h2 class="titulo-zona"><span class="letra-acronimo l-a">A</span> · Argumentar el veredicto <span class="text-xs font-normal bg-purple-100 text-purple-900 px-2.5 py-0.5 rounded-full border border-purple-300">7 min · Sin IA</span></h2>
+        <p class="text-slate-700 text-sm m-0">Conectad lo descubierto en R, I y B para decidir vuestro veredicto.</p>
+      </div>
+      <div class="mb-4">
+        <span class="block font-bold mb-2">1. Elegid el veredicto del grupo:</span>
+        <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          <button type="button" class="btn-veredicto-item" data-veredicto="Fiable">✅ Fiable</button>
+          <button type="button" class="btn-veredicto-item" data-veredicto="Fiable con matices">☑️ Fiable con matices</button>
+          <button type="button" class="btn-veredicto-item" data-veredicto="Engañosa">⚠️ Engañosa</button>
+          <button type="button" class="btn-veredicto-item" data-veredicto="Falsa">❌ Falsa</button>
+          <button type="button" class="btn-veredicto-item" data-veredicto="No se puede saber aún">❓ No se puede saber aún</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="bg-white p-3 rounded-xl border-t-4 border-t-blue-700 border border-slate-200">
+          <label for="aRazonR" class="block font-bold text-sm mb-1 text-blue-900">Lo que nos dice R (una razón)</label>
+          <textarea id="aRazonR" rows="2" placeholder="¿Qué vimos al resumir o analizar el texto?"></textarea>
+        </div>
+        <div class="bg-white p-3 rounded-xl border-t-4 border-t-orange-700 border border-slate-200">
+          <label for="aRazonI" class="block font-bold text-sm mb-1 text-orange-900">Lo que nos dice I (una razón)</label>
+          <textarea id="aRazonI" rows="2" placeholder="¿Qué nos indica la autoría o falta de fuente original?"></textarea>
+        </div>
+        <div class="bg-white p-3 rounded-xl border-t-4 border-t-green-700 border border-slate-200">
+          <label for="aRazonB" class="block font-bold text-sm mb-1 text-green-900">Lo que nos dice B (una razón)</label>
+          <textarea id="aRazonB" rows="2" placeholder="¿Qué comprobamos al buscar fuera?"></textarea>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-purple-200 mb-4">
+        <span class="block font-bold text-sm mb-2">Confianza del grupo ahora (de 1 a 6):</span>
+        <div class="flex flex-wrap items-center gap-4">
+          <div id="grupoConfianzaFinal" class="grid grid-cols-6 gap-2 min-w-[280px]">
+            <button type="button" class="btn-opcion btn-conf-final" data-conf="1">1</button><button type="button" class="btn-opcion btn-conf-final" data-conf="2">2</button><button type="button" class="btn-opcion btn-conf-final" data-conf="3">3</button><button type="button" class="btn-opcion btn-conf-final" data-conf="4">4</button><button type="button" class="btn-opcion btn-conf-final" data-conf="5">5</button><button type="button" class="btn-opcion btn-conf-final" data-conf="6">6</button>
+          </div>
+          <div id="comparativaConfianzaTexto" class="hidden bg-slate-900 text-white px-4 py-2 rounded-lg font-bold text-base" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="flex justify-end">
+        <button type="button" id="btnCompletarA" class="bg-purple-700 hover:bg-purple-800 text-white px-6">Abrir +C · Contraste →</button>
+      </div>
+    </section>
+
+    <!-- ZONA +C · CONTRASTE -->
+    <section id="zona-masC" class="zona-tarjeta bloqueada">
+      <div class="candado-overlay" id="candado-masC"><span class="candado-etiqueta">🔒 Se abre cuando terminéis Argumentar</span></div>
+      <div class="mb-4">
+        <h2 class="titulo-zona"><span class="letra-acronimo l-masc">+C</span> · Contraste <span class="text-xs font-normal bg-teal-100 text-teal-900 px-2.5 py-0.5 rounded-full border border-teal-300">5 min · Crítico IA</span></h2>
+        <p class="text-slate-600 text-sm m-0">Pensad en qué escenario vuestro veredicto podría fallar y contrastadlo con la IA.</p>
+      </div>
+      <div class="mb-3">
+        <label for="cSituacion" class="block font-bold mb-1">¿En qué situación podría fallar nuestro veredicto? (máx. 2 líneas)</label>
+        <textarea id="cSituacion" rows="2" maxlength="200" placeholder="Nuestro veredicto fallaría si..."></textarea>
+      </div>
+      <div class="mb-3">
+        <button type="button" id="btnContrastarIA" class="bg-slate-700 text-white" disabled>⚖️ Contrastar con la IA (1 vez)</button>
+      </div>
+      <div id="bocadilloIAContraste" class="bocadillo-ia hidden mb-4" aria-live="polite">
+        <div class="flex items-center gap-1.5 mb-1.5"><span class="rotulo-ia">IA</span><span class="text-xs font-bold">Crítico de contraste</span></div>
+        <p id="textoIAContraste" class="text-sm m-0 mb-2.5"></p>
+        <button type="button" class="btn-error-ia bg-white border border-slate-400 text-xs py-1 px-2.5" data-col="CONTRASTE">⚠️ Creemos que la IA se equivoca</button>
+        <div id="cajaErrorIACONTRASTE" class="hidden mt-2 pt-2 border-t border-dashed border-slate-400">
+          <input type="text" id="inputErrorIACONTRASTE" maxlength="140" placeholder="Explicad por qué..." class="text-xs min-h-[36px] mb-1.5" />
+          <button type="button" class="btn-guardar-error bg-slate-800 text-white text-xs px-3 py-1" data-col="CONTRASTE">Guardar</button>
+        </div>
+      </div>
+      <div id="bloqueDecisionContraste" class="hidden bg-teal-50/70 p-4 rounded-xl border border-teal-200">
+        <div class="mb-3">
+          <span class="block font-bold text-sm mb-1.5">¿Mantenéis o cambiáis vuestro veredicto?</span>
+          <div class="grid grid-cols-2 gap-3 max-w-md">
+            <button type="button" class="btn-opcion btn-toggle-campo" data-campo="c_decision" data-valor="Mantenemos">🔒 Mantenemos</button>
+            <button type="button" class="btn-opcion btn-toggle-campo" data-campo="c_decision" data-valor="Cambiamos">🔄 Cambiamos</button>
+          </div>
+        </div>
+        <div id="selectorNuevoVeredicto" class="hidden mb-3">
+          <span class="block font-bold text-sm mb-1.5">Nuevo veredicto:</span>
+          <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            <button type="button" class="btn-opcion btn-veredicto-nuevo text-sm" data-veredicto="Fiable">Fiable</button>
+            <button type="button" class="btn-opcion btn-veredicto-nuevo text-sm" data-veredicto="Fiable con matices">Fiable con matices</button>
+            <button type="button" class="btn-opcion btn-veredicto-nuevo text-sm" data-veredicto="Engañosa">Engañosa</button>
+            <button type="button" class="btn-opcion btn-veredicto-nuevo text-sm" data-veredicto="Falsa">Falsa</button>
+            <button type="button" class="btn-opcion btn-veredicto-nuevo text-sm" data-veredicto="No se puede saber aún">No se puede saber aún</button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="cPorque" class="block font-bold text-sm mb-1">Porque… (máx. 2 líneas)</label>
+          <textarea id="cPorque" rows="2" maxlength="200" placeholder="Explicad por qué..."></textarea>
+        </div>
+        <div class="flex justify-end">
+          <button type="button" id="btnCompletarMasC" class="bg-teal-700 hover:bg-teal-800 text-white px-6">Abrir Contamos →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ZONA CONTAMOS -->
+    <section id="zona-contamos" class="zona-tarjeta bloqueada">
+      <div class="candado-overlay" id="candado-contamos"><span class="candado-etiqueta">🔒 Se abre cuando terminéis Contraste</span></div>
+      <div class="mb-4">
+        <h2 class="titulo-zona">Zona Contamos <span class="text-xs font-normal bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full border border-slate-300">3 min · Sin IA</span></h2>
+        <p class="text-slate-600 text-sm m-0">Escribid un titular fiel y una nota de contexto para redes.</p>
+      </div>
+      <div class="mb-4">
+        <label for="contamosTitular" class="block font-bold text-sm mb-1">Titular fiel <span id="contadorTitularFiel" class="text-xs font-normal">(0 / 15 palabras)</span></label>
+        <input type="text" id="contamosTitular" placeholder="Titular ajustado y riguroso..." />
+      </div>
+      <div class="mb-4">
+        <label for="contamosNota" class="block font-bold text-sm mb-1">Nota de contexto <span id="contadorNotaContexto" class="text-xs font-normal">(0 / 200 caracteres)</span></label>
+        <textarea id="contamosNota" rows="2" maxlength="200" placeholder="Antes de compartir esto..."></textarea>
+      </div>
+      <div class="flex justify-end">
+        <button type="button" id="btnTerminarCriba" class="bg-emerald-700 hover:bg-emerald-800 text-white text-lg px-7 py-3">✅ Hemos terminado la criba</button>
+      </div>
+    </section>
+
+    <!-- CIERRE E INFORME FINAL -->
+    <section id="zona-cierre" class="zona-tarjeta hidden border-2 border-emerald-700">
+      <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+        <h2 class="titulo-zona text-emerald-950">📋 Organizador completado e Informe para el Profesor</h2>
+      </div>
+      <div id="contenedorInformeRenderizado" class="space-y-3 mb-4"></div>
+      <div class="flex flex-wrap items-center gap-3 no-imprimir">
+        <button type="button" id="btnDescargarPDF" class="bg-blue-700 hover:bg-blue-800 text-white">🖨️ Descargar PDF (Impresión A4)</button>
+        <button type="button" id="btnAvisarProfesor" class="bg-amber-600 hover:bg-amber-700 text-white">✋ Avisar al profesor</button>
+      </div>
+      <div id="cartelAvisarProfesor" class="hidden mt-4 p-4 bg-amber-100 border-2 border-amber-600 rounded-xl text-center text-amber-950 text-xl font-bold">
+        🙋‍♂️🙋‍♀️ Llamad al profesor para que lo revise
+      </div>
+    </section>
+  </main>
+
+  <!-- VISTA DEL PROFESOR (?vista=profesor) -->
+  <main id="vistaProfesor" class="max-w-7xl mx-auto px-3 sm:px-5 py-6 hidden">
+    <section id="cardLoginProfesor" class="zona-tarjeta max-w-lg mx-auto my-6">
+      <h2 class="titulo-zona mb-2">🔐 Vista del Profesor · CRIBA+C</h2>
+      <p class="text-sm text-slate-600 mb-4">Introduce el <code>PIN_PROFESOR</code> configurado en Vercel.</p>
+      <div class="flex gap-2">
+        <input type="password" id="inputPinProfesor" placeholder="PIN" />
+        <button type="button" id="btnValidarPinProf" class="bg-blue-700 text-white px-6">Entrar</button>
+      </div>
+      <p id="msgErrorPin" class="text-xs text-red-700 font-bold mt-2 mb-0"></p>
+    </section>
+
+    <div id="contenidoPanelProfesor" class="hidden space-y-6">
+      <section class="zona-tarjeta">
+        <h2 class="titulo-zona mb-3">1. Crear nueva sesión de aula</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+          <div><label class="block font-bold text-sm mb-1">Titular *</label><input type="text" id="profTitular" placeholder="Titular..." /></div>
+          <div><label class="block font-bold text-sm mb-1">Entradilla</label><input type="text" id="profEntradilla" placeholder="Entradilla..." /></div>
+        </div>
+        <div class="mb-3"><label class="block font-bold text-sm mb-1">Cuerpo de la noticia *</label><textarea id="profCuerpo" rows="3" placeholder="Texto completo..."></textarea></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div><label class="block font-bold text-sm mb-1">URL imagen (opcional)</label><input type="url" id="profUrlImagen" placeholder="https://..." /></div>
+          <div><label class="block font-bold text-sm mb-1">Enlace al original *</label><input type="url" id="profEnlaceOriginal" placeholder="https://..." /></div>
+        </div>
+        <div class="flex justify-end">
+          <button type="button" id="btnGenerarCodigoSesion" class="bg-blue-700 text-white">➕ Crear sesión y generar código</button>
+        </div>
+        <div id="cajaCodigoCreadoProf" class="hidden mt-4 p-4 bg-emerald-50 border-2 border-emerald-600 rounded-xl font-bold"></div>
+      </section>
+
+      <section class="zona-tarjeta">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="titulo-zona">2. Seguimiento en tiempo real</h2>
+          <button type="button" id="btnRefrescarTablaProf" class="bg-slate-200 text-slate-900 text-sm">🔄 Actualizar</button>
+        </div>
+        <table class="w-full border-collapse text-sm">
+          <thead><tr class="bg-slate-100 text-left"><th class="p-2">Sesión</th><th class="p-2">Grupo</th><th class="p-2">Tamaño</th><th class="p-2">Iniciales</th><th class="p-2">Momento</th><th class="p-2">Pistas</th><th class="p-2">Actualización</th></tr></thead>
+          <tbody id="tbodySeguimientoProf"></tbody>
+        </table>
+      </section>
+
+      <section class="zona-tarjeta">
+        <h2 class="titulo-zona mb-3">3. Resultados y organizadores</h2>
+        <div id="contenedorBotonesOrganizadores" class="flex flex-wrap gap-2 mb-4"></div>
+        <div id="visorOrganizadorSeleccionado" class="hidden bg-slate-50 p-4 rounded-xl border"></div>
+      </section>
+
+      <section class="zona-tarjeta border-red-300 bg-red-50/40">
+        <h2 class="titulo-zona text-red-900 mb-2">4. Mantenimiento</h2>
+        <button type="button" id="btnVaciarCurso" class="bg-red-700 text-white text-sm">🗑️ Vaciar datos del curso</button>
+      </section>
+    </div>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
