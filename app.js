@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let tamanoGrupo = 3;
   let segundosRestantes = 120;
   let faseActual = 'Preparación';
-  let aiConsultadaA = false; // <-- Control para obligar a usar la IA en la fase A
+  let aiConsultadaA = false; 
+  let cuerpoDesbloqueado = false; // <-- Nueva variable para controlar la noticia
 
   const TIEMPOS_FASE = {
     'zona-prep': { nombre: 'Preparación', seg: 120 },
@@ -66,12 +67,31 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => irAZona(btn.dataset.target));
   });
 
-  // Control estricto para avanzar de fases
+  // Control estricto para avanzar de fases y desbloquear la noticia
   [['btn-empezar-c', 'zona-c'], ['btn-abrir-rib', 'zona-rib'], ['btn-abrir-a', 'zona-a'], ['btn-abrir-masc', 'zona-masc'], ['btn-abrir-contamos', 'zona-contamos']].forEach(([idBtn, idZona]) => {
     const b = document.getElementById(idBtn);
     if (b) {
       b.addEventListener('click', (e) => {
-        // Bloqueo específico: Si intentan ir a +C sin consultar la IA en Argumentar
+        
+        // 1. Bloqueo de R·I·B (Obliga a rellenar Corazonada)
+        if (idBtn === 'btn-abrir-rib') {
+          const em = document.getElementById('select-emocion').value;
+          const im = document.getElementById('select-impulso').value;
+          const co = document.getElementById('texto-corazonada').value.trim();
+          if (!em || !im || co.length < 5) {
+            e.preventDefault();
+            alert('⚠️ Obligatorio: Rellenad la emoción, el impulso y vuestra corazonada para poder desbloquear el texto de la noticia.');
+            return;
+          }
+          // Si pasa, desbloqueamos la noticia
+          cuerpoDesbloqueado = true;
+          const boxNoticia = document.getElementById('box-noticia-rib');
+          const avisoBloqueo = document.getElementById('aviso-bloqueo-rib');
+          if (boxNoticia) boxNoticia.classList.remove('hidden');
+          if (avisoBloqueo) avisoBloqueo.classList.add('hidden');
+        }
+
+        // 2. Bloqueo de MASC (Obliga a pedir IA en Argumento)
         if (idBtn === 'btn-abrir-masc' && !aiConsultadaA) {
           e.preventDefault();
           const boxResp = document.getElementById('ia-resp-A');
@@ -83,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           return;
         }
+
         irAZona(idZona);
       });
     }
@@ -278,14 +299,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (contador) contador.textContent = consultasIA;
         if (boxResp) boxResp.textContent = '🤖 ' + (data.respuesta || data.error);
         
-        // Si la IA respondió con éxito en la fase A, desbloqueamos el paso a +C
         if (fase === 'A' && !data.error) {
           aiConsultadaA = true;
         }
 
       } catch (err) {
         if (boxResp) boxResp.textContent = '🤖 Ayuda: ¿Qué pruebas concretas ofrece el texto para sostener esto?';
-        if (fase === 'A') aiConsultadaA = true; // Si hay error de red, no los dejamos atrapados
+        if (fase === 'A') aiConsultadaA = true; 
       }
       guardarLocal();
     });
@@ -332,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        // Aquí está el cambio 1 que pediste:
         if (msg) msg.textContent = '✅ ¡Guardado correctamente!';
       } catch (e) {
         if (msg) msg.textContent = '✅ ¡Guardado correctamente!';
@@ -383,7 +402,8 @@ document.addEventListener('DOMContentLoaded', () => {
       'texto-r', 'texto-i', 'texto-b',
       'select-veredicto', 'texto-argumento', 'texto-contraste', 'texto-guion'
     ];
-    const datos = { tamanoGrupo, consultasIA, aiConsultadaA, valores: {} };
+    // ¡Añadida la variable del cuerpo bloqueado a los datos guardados!
+    const datos = { tamanoGrupo, consultasIA, aiConsultadaA, cuerpoDesbloqueado, valores: {} };
     campos.forEach((id) => {
       const el = document.getElementById(id);
       if (el) datos.valores[id] = el.value;
@@ -405,6 +425,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (datos.aiConsultadaA !== undefined) {
         aiConsultadaA = datos.aiConsultadaA;
       }
+      
+      // Si la noticia ya estaba desbloqueada antes de recargar la página, se la mostramos
+      if (datos.cuerpoDesbloqueado) {
+        cuerpoDesbloqueado = true;
+        const boxNoticia = document.getElementById('box-noticia-rib');
+        const avisoBloqueo = document.getElementById('aviso-bloqueo-rib');
+        if (boxNoticia) boxNoticia.classList.remove('hidden');
+        if (avisoBloqueo) avisoBloqueo.classList.add('hidden');
+      }
+
       if (datos.valores) {
         Object.entries(datos.valores).forEach(([id, val]) => {
           const el = document.getElementById(id);
