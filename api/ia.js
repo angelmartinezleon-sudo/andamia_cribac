@@ -79,7 +79,7 @@ Instrucción estricta: No digas si es verdad o mentira ni des la respuesta hecha
 
     try {
       // Ruta universal forzada con -latest para evitar errores de API
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey.trim()}`;
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
