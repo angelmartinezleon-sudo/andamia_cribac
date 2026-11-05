@@ -221,7 +221,14 @@
         <h2 class="zona-title"><span style="color:#16a34a;">R · I · B</span> · Lectura y Verificación</h2>
         <span class="badge-time">15 min</span>
       </div>
-      <div class="noticia-box">
+
+      <!-- AVISO DE BLOQUEO (Desaparece al pulsar el botón de desbloqueo) -->
+      <div id="aviso-bloqueo-rib" style="background: #f8fafc; padding: 24px; text-align: center; border-radius: 12px; border: 2px dashed #cbd5e1; margin-bottom: 24px; color: #475569; font-weight: 600;">
+        🔒 El texto de la noticia está oculto. Rellenad la fase "Corazonada" (emoción, impulso y texto) y pulsad el botón "Desbloquear cuerpo" para leerlo.
+      </div>
+
+      <!-- CUERPO DE LA NOTICIA (Oculto por defecto con la clase hidden) -->
+      <div class="noticia-box hidden" id="box-noticia-rib">
         <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #b45309; margin-bottom: 6px;">Texto completo de la noticia</div>
         <div class="noticia-cuerpo" id="noticia-cuerpo">Redacción (14 de marzo). Según circula desde ayer en varias cuentas de redes sociales y en el portal viral AulaExpress, escuchar canciones y pódcast al doble de velocidad (2x) durante veinte minutos al día incrementa hasta un 40 % el rendimiento en los exámenes de 3.º y 4.º de ESO.
 
@@ -230,6 +237,7 @@ El texto cita al supuesto "Instituto Internacional de Neurovelocidad Aplicada", 
 Al final del artículo se incluye un enlace promocional para descargar una aplicación de pago por 9,99 € al mes.</div>
         <div style="margin-top: 10px; font-size: 0.85rem; color: #475569;">🔗 Fuente: <span id="noticia-enlace">https://ejemplo-noticias-aula.es/musica-doble-velocidad-notas</span></div>
       </div>
+      
       <div class="subcard" style="margin-bottom: 20px; background: #f0fdf4; border-color: #bbf7d0;">
         <h4>📖 Paso 1: Lectura individual y síntesis del grupo</h4>
         <div class="grid-3">
@@ -312,7 +320,7 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
     <div class="zona-card" style="border: 2px solid #2563eb;">
       <h2>🔒 Panel Docente · Configurar Noticia y Sesión</h2>
       <div class="grid-2">
-        <div><label for="profe-pin">PIN de Profesor</label><input type="password" id="profe-pin" placeholder="PIN (ej. 1234)" /></div>
+        <div><label for="profe-pin">PIN de Profesor</label><input type="password" id="profe-pin" placeholder="PIN" /></div>
         <div><label for="profe-codigo">Código para la clase (ej. ESO3)</label><input type="text" id="profe-codigo" value="ESO3" maxlength="8" /></div>
       </div>
       <label for="profe-titular">Titular</label><input type="text" id="profe-titular" placeholder="Titular..." />
