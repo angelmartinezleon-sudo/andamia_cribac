@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (msg) msg.textContent = '✅ ¡Guardado en el Excel correctamente! Ya podéis descargar vuestro PDF.';
+        if (msg) msg.textContent = '✅ ¡Guardado en el Excel correctamente!';
       } catch (e) {
         if (msg) msg.textContent = '✅ Guardado localmente en el dispositivo.';
       }
