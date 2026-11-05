@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 
     // IA Socrática
     const apiKey = process.env.AI_API_KEY;
-    const modelName = process.env.AI_MODEL || 'gemini-2.5-flash';
+    const modelName = process.env.AI_MODEL || 'gemini-3.8-flash';
     if (!apiKey) return res.status(500).json({ error: 'Falta configurar la clave AI_API_KEY en Vercel.' });
 
     const { fase, textoAlumno, cuerpo, titular } = body;
