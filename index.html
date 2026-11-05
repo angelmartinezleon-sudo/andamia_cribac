@@ -210,7 +210,7 @@
       <label for="texto-corazonada">3. ¿Por qué creéis que este titular llama tanto la atención?</label>
       <textarea id="texto-corazonada" placeholder="Escribid vuestra primera impresión..."></textarea>
       <div class="actions-row" style="justify-content: space-between;">
-        <button type="button" class="btn-ia" data-fase="C" data-campo="texto-corazonada">💡 Pedir pista a la IA</button>
+        <button type="button" class="btn-ia" data-fase="C" data-campo="texto-corazonada">💡 Pedir ayuda a la IA</button>
         <button type="button" class="btn-primary" id="btn-abrir-rib">Desbloquear cuerpo y pasar a R·I·B →</button>
       </div>
       <div class="ia-response" id="ia-resp-C"></div>
@@ -243,21 +243,21 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
       <h4 style="margin-bottom: 10px;">🔎 Paso 2: Investigación por columnas</h4>
       <div class="grid-3">
         <div class="subcard">
-          <h4>R · Redacción</h4>
+          <h4>R Redacción (estilo)</h4>
           <textarea id="texto-r" placeholder="Tono, exageraciones..."></textarea>
-          <button type="button" class="btn-ia" data-fase="R" data-campo="texto-r" style="margin-top: 8px; width: 100%;">💡 Pista IA (R)</button>
+          <button type="button" class="btn-ia" data-fase="R" data-campo="texto-r" style="margin-top: 8px; width: 100%;">💡 Ayuda IA (R)</button>
           <div class="ia-response" id="ia-resp-R"></div>
         </div>
         <div class="subcard">
           <h4>I · Fuente</h4>
           <textarea id="texto-i" placeholder="Quién la publica..."></textarea>
-          <button type="button" class="btn-ia" data-fase="I" data-campo="texto-i" style="margin-top: 8px; width: 100%;">💡 Pista IA (I)</button>
+          <button type="button" class="btn-ia" data-fase="I" data-campo="texto-i" style="margin-top: 8px; width: 100%;">💡 Ayuda IA (I)</button>
           <div class="ia-response" id="ia-resp-I"></div>
         </div>
         <div class="subcard">
           <h4>B · Búsqueda externa</h4>
           <textarea id="texto-b" placeholder="Lectura lateral..."></textarea>
-          <button type="button" class="btn-ia" data-fase="B" data-campo="texto-b" style="margin-top: 8px; width: 100%;">💡 Pista IA (B)</button>
+          <button type="button" class="btn-ia" data-fase="B" data-campo="texto-b" style="margin-top: 8px; width: 100%;">💡 Ayuda IA (B)</button>
           <div class="ia-response" id="ia-resp-B"></div>
         </div>
       </div>
@@ -286,10 +286,10 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
 
     <section class="zona-card" id="zona-masc">
       <div class="zona-header"><h2 class="zona-title"><span style="color:#9333ea;">+C</span> · Contraste</h2><span class="badge-time">5 min</span></div>
-      <label for="texto-contraste">¿En qué ha cambiado vuestra corazonada?</label>
+      <label for="texto-contraste">Si ha cambiado vuestra corazonada: ¿en qué ha cambiado?, ¿por qué ha cambiado? Si no ha cambiado, ¿qué es lo que os ha hecho reafirmaros?</label>
       <textarea id="texto-contraste" placeholder="Al principio..."></textarea>
       <div class="actions-row" style="justify-content: space-between;">
-        <button type="button" class="btn-ia" data-fase="MASC" data-campo="texto-contraste">💡 Pista IA (+C)</button>
+        <button type="button" class="btn-ia" data-fase="MASC" data-campo="texto-contraste">💡 Ayuda IA</button>
         <button type="button" class="btn-primary" id="btn-abrir-contamos">Pasar a Contamos →</button>
       </div>
       <div class="ia-response" id="ia-resp-MASC"></div>
@@ -297,11 +297,11 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
 
     <section class="zona-card" id="zona-contamos">
       <div class="zona-header"><h2 class="zona-title">📢 Contamos · Entrega final</h2><span class="badge-time">3 min</span></div>
-      <label for="texto-guion">Guion de 30 segundos</label>
+      <label for="texto-guion">Escribimos con nuestras propias palabras lo más importante que hemos confirmado de la noticia</label>
       <textarea id="texto-guion" placeholder="Hola, somos..."></textarea>
       <div class="actions-row" style="margin-top: 20px;">
         <button type="button" class="btn-success" id="btn-descargar-pdf">📄 Descargar PDF</button>
-        <button type="button" class="btn-primary" id="btn-enviar-profe">📤 Guardar entrega en Excel</button>
+        <button type="button" class="btn-primary" id="btn-enviar-profe">💾 Guardar</button>
         <span id="mensaje-entrega" style="font-weight: 600; color: #16a34a;"></span>
       </div>
     </section>
