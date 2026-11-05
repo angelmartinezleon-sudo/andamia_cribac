@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const STORAGE_KEY = 'cribac_estado_v5';
+  const STORAGE_KEY = 'cribac_estado_v6';
   let consultasIA = 0;
   const MAX_IA = 12;
   let tamanoGrupo = 3;
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Conectar con la Sesión de Google Sheets y recuperar entrega previa del grupo
+  // Conectar con la Sesión de Google Sheets y recuperar trabajo previo
   const btnConectar = document.getElementById('btn-conectar');
   if (btnConectar) {
     btnConectar.addEventListener('click', async () => {
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         if (estado) estado.textContent = 'Conectando con la nube...';
         
-        // 1. Cargar noticia
+        // 1. Cargar noticia de la sesión
         const resSesion = await fetch(`/api/ia?accion=sesion&codigo=${encodeURIComponent(codigo)}`);
         if (resSesion.ok) {
           const data = await resSesion.json();
@@ -142,56 +142,63 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
 
-        // 2. Cargar entrega previa del grupo
-        const resEntrega = await fetch(`/api/ia?accion=cargar_entrega&codigo=${encodeURIComponent(codigo)}&grupo=${encodeURIComponent(grupo)}`);
-        if (resEntrega.ok) {
-          const dataE = await resEntrega.json();
-          if (dataE && dataE.entrega) {
-            const e = dataE.entrega;
-            if (e.roles) {
-              const partes = e.roles.split('|');
-              if (partes[0]) {
-                const valR = partes[0].replace('R:', '').trim();
-                const inpR = document.getElementById('rol-r');
-                if (inpR) inpR.value = valR !== 'undefined' ? valR : '';
+        // 2. Intentar cargar entrega previa del Excel (Nube)
+        let cargado = false;
+        try {
+          const resEntrega = await fetch(`/api/ia?accion=cargar_entrega&codigo=${encodeURIComponent(codigo)}&grupo=${encodeURIComponent(grupo)}`);
+          if (resEntrega.ok) {
+            const dataE = await resEntrega.json();
+            if (dataE && dataE.entrega) {
+              const e = dataE.entrega;
+              if (e.roles) {
+                const partes = e.roles.split('|');
+                if (partes[0]) {
+                  const valR = partes[0].replace('R:', '').trim();
+                  const inpR = document.getElementById('rol-r');
+                  if (inpR && valR !== 'undefined') inpR.value = valR;
+                }
+                if (partes[1]) {
+                  const valI = partes[1].replace('I:', '').trim();
+                  const inpI = document.getElementById('rol-i');
+                  if (inpI && valI !== 'undefined') inpI.value = valI;
+                }
+                if (partes[2]) {
+                  const valB = partes[2].replace('B:', '').trim();
+                  const inpB = document.getElementById('rol-b');
+                  if (inpB && valB !== 'undefined') inpB.value = valB;
+                }
               }
-              if (partes[1]) {
-                const valI = partes[1].replace('I:', '').trim();
-                const inpI = document.getElementById('rol-i');
-                if (inpI) inpI.value = valI !== 'undefined' ? valI : '';
-              }
-              if (partes[2]) {
-                const valB = partes[2].replace('B:', '').trim();
-                const inpB = document.getElementById('rol-b');
-                if (inpB) inpB.value = valB !== 'undefined' ? valB : '';
-              }
-            }
 
-            if (e.emocion) document.getElementById('select-emocion').value = e.emocion;
-            if (e.impulso) document.getElementById('select-impulso').value = e.impulso;
-            if (e.corazonada) document.getElementById('texto-corazonada').value = e.corazonada;
-            if (e.lectura_grupo) document.getElementById('sintesis-lectura').value = e.lectura_grupo;
-            if (e.texto_r) document.getElementById('texto-r').value = e.texto_r;
-            if (e.texto_i) document.getElementById('texto-i').value = e.texto_i;
-            if (e.texto_b) document.getElementById('texto-b').value = e.texto_b;
-            if (e.veredicto) document.getElementById('select-veredicto').value = e.veredicto;
-            if (e.argumento) document.getElementById('texto-argumento').value = e.argumento;
-            if (e.contraste) document.getElementById('texto-contraste').value = e.contraste;
-            if (e.guion) document.getElementById('texto-guion').value = e.guion;
-            
-            if (e.consultas_ia) {
-              consultasIA = parseInt(e.consultas_ia) || 0;
-              const contador = document.getElementById('contador-ia');
-              if (contador) contador.textContent = consultasIA;
+              if (e.emocion) document.getElementById('select-emocion').value = e.emocion;
+              if (e.impulso) document.getElementById('select-impulso').value = e.impulso;
+              if (e.corazonada) document.getElementById('texto-corazonada').value = e.corazonada;
+              if (e.lectura_grupo) document.getElementById('sintesis-lectura').value = e.lectura_grupo;
+              if (e.texto_r) document.getElementById('texto-r').value = e.texto_r;
+              if (e.texto_i) document.getElementById('texto-i').value = e.texto_i;
+              if (e.texto_b) document.getElementById('texto-b').value = e.texto_b;
+              if (e.veredicto) document.getElementById('select-veredicto').value = e.veredicto;
+              if (e.argumento) document.getElementById('texto-argumento').value = e.argumento;
+              if (e.contraste) document.getElementById('texto-contraste').value = e.contraste;
+              if (e.guion) document.getElementById('texto-guion').value = e.guion;
+              
+              if (e.consultas_ia) {
+                consultasIA = parseInt(e.consultas_ia) || 0;
+                const contador = document.getElementById('contador-ia');
+                if (contador) contador.textContent = consultasIA;
+              }
+              cargado = true;
             }
-
-            if (estado) estado.textContent = `✅ ¡Sesión ${codigo} conectada! Progreso recuperado del Excel.`;
-            return;
           }
+        } catch (ex) {}
+
+        // 3. Respaldo local si la nube no devolvió datos
+        if (!cargado) {
+          cargarLocal();
         }
-        
-        if (estado) estado.textContent = `✅ Sesión ${codigo} conectada para ${grupo}.`;
+
+        if (estado) estado.textContent = `✅ Sesión ${codigo} conectada para ${grupo}. ¡Todo listo!`;
       } catch (err) {
+        cargarLocal();
         if (estado) estado.textContent = `✅ Modo local activo (${codigo})`;
       }
     });
@@ -206,9 +213,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const textoAlumno = campo ? campo.value.trim() : '';
       const boxResp = document.getElementById(`ia-resp-${fase}`);
 
-      if (!textoAlumno || textoAlumno.length < 10) {
+      if (!textoAlumno || textoAlumno.length < 5) {
         if (boxResp) {
-          boxResp.textContent = '✍️ Escribid primero vuestra propia idea (al menos una frase) antes de pedir pista a la IA.';
+          boxResp.textContent = '✍️ Escribid primero vuestra propia idea antes de pedir pista a la IA.';
           boxResp.classList.add('visible');
         }
         return;
@@ -227,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const res = await fetch('/api/ia', {
+        let res = await fetch('/api/ia', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -238,13 +245,33 @@ document.addEventListener('DOMContentLoaded', () => {
             grupo: document.getElementById('select-grupo').value
           })
         });
-        const data = await res.json();
+
+        let data = await res.json();
+        
+        // Reintento automático si hay saturación temporal
+        if (data.error && data.error.includes('demand')) {
+          if (boxResp) boxResp.textContent = '⏳ Tráfico denso, reintentando...';
+          await new Promise(r => setTimeout(r, 1200));
+          res = await fetch('/api/ia', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              accion: 'pista', fase, textoAlumno,
+              titular: document.getElementById('noticia-titular').textContent,
+              cuerpo: document.getElementById('noticia-cuerpo').textContent,
+              codigo: document.getElementById('input-codigo').value,
+              grupo: document.getElementById('select-grupo').value
+            })
+          });
+          data = await res.json();
+        }
+
         consultasIA++;
         const contador = document.getElementById('contador-ia');
         if (contador) contador.textContent = consultasIA;
         if (boxResp) boxResp.textContent = '🤖 ' + (data.respuesta || data.error);
       } catch (err) {
-        if (boxResp) boxResp.textContent = '🤖 Pista: ¿Qué pruebas concretas ofrece el texto?';
+        if (boxResp) boxResp.textContent = '🤖 Pista: ¿Qué pruebas concretas ofrece el texto para sostener esto?';
       }
       guardarLocal();
     });
@@ -258,13 +285,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Enviar entrega al Excel
+  // Enviar entrega al Excel (Botón renombrado a "Guardar")
   const btnEnviar = document.getElementById('btn-enviar-profe');
   if (btnEnviar) {
+    btnEnviar.textContent = '💾 Guardar';
     btnEnviar.addEventListener('click', async () => {
       guardarLocal();
       const msg = document.getElementById('mensaje-entrega');
-      if (msg) msg.textContent = '📤 Guardando entrega en el Excel...';
+      if (msg) msg.textContent = '📤 Guardando en el Excel...';
 
       const payload = {
         accion: 'guardar_entrega',
@@ -291,9 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (msg) msg.textContent = '✅ ¡Entregado y guardado en el Excel del profesor! Ya podéis descargar vuestro PDF.';
+        if (msg) msg.textContent = '✅ ¡Guardado en el Excel correctamente! Ya podéis descargar vuestro PDF.';
       } catch (e) {
-        if (msg) msg.textContent = '✅ Guardado localmente. Ya podéis descargar vuestro PDF.';
+        if (msg) msg.textContent = '✅ Guardado localmente en el dispositivo.';
       }
     });
   }
