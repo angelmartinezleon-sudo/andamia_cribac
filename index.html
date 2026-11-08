@@ -159,15 +159,15 @@
       </div>
       <div class="grid-3">
         <div class="subcard">
-          <label for="rol-r" id="label-rol-r">Analista del texto (Columna R)</label>
+          <label for="rol-r" id="label-rol-r">Rol de Analista de Redacción (R)</label>
           <input type="text" id="rol-r" placeholder="Iniciales (ej. AML)" maxlength="4" />
         </div>
         <div class="subcard">
-          <label for="rol-i" id="label-rol-i">Rastreador de fuentes (Columna I)</label>
+          <label for="rol-i" id="label-rol-i">Rol de Rastreador de Informador (I)</label>
           <input type="text" id="rol-i" placeholder="Iniciales (ej. MML)" maxlength="4" />
         </div>
         <div class="subcard" id="card-rol-b">
-          <label for="rol-b" id="label-rol-b">Contrastador externo (Columna B)</label>
+          <label for="rol-b" id="label-rol-b">Rol de Búsqueda externa (B)</label>
           <input type="text" id="rol-b" placeholder="Iniciales (ej. DLM)" maxlength="4" />
         </div>
       </div>
@@ -187,7 +187,7 @@
       </div>
       <div class="grid-2">
         <div>
-          <label for="select-emocion">1. ¿Qué primera emoción busca provocar este titular?</label>
+          <label for="select-emocion">1. ¿Qué emoción busca provocar en primer lugar este titular?</label>
           <select id="select-emocion">
             <option value="">-- Elegid --</option>
             <option value="Sorpresa / Asombro">😲 Sorpresa / Asombro</option>
@@ -207,8 +207,8 @@
           </select>
         </div>
       </div>
-      <label for="texto-corazonada">3. ¿Por qué creéis que este titular llama tanto la atención?</label>
-      <textarea id="texto-corazonada" placeholder="Escribid vuestra primera impresión..."></textarea>
+      <label for="texto-corazonada">3. ¿Creéis que este titular llama la atención? ¿Por qué?</label>
+      <textarea id="texto-corazonada" placeholder="Escribid vuestra primera impresión y siempre que podáis pedir ayuda a la IA después de las preguntas que os haga podéis reescribir el texto."></textarea>
       <div class="actions-row" style="justify-content: space-between;">
         <button type="button" class="btn-ia" data-fase="C" data-campo="texto-corazonada">💡 Pedir ayuda a la IA</button>
         <button type="button" class="btn-primary" id="btn-abrir-rib">Desbloquear cuerpo y pasar a R·I·B →</button>
@@ -252,19 +252,19 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
       <div class="grid-3">
         <div class="subcard">
           <h4>R Redacción (estilo)</h4>
-          <textarea id="texto-r" placeholder="Tono, exageraciones..."></textarea>
+          <textarea id="texto-r" placeholder="¿Qué tono tiene el texto?, ¿tiene exageraciones?, ¿cómo es la redacción?..."></textarea>
           <button type="button" class="btn-ia" data-fase="R" data-campo="texto-r" style="margin-top: 8px; width: 100%;">💡 Ayuda IA (R)</button>
           <div class="ia-response" id="ia-resp-R"></div>
         </div>
         <div class="subcard">
           <h4>I · Fuente</h4>
-          <textarea id="texto-i" placeholder="Quién la publica..."></textarea>
+          <textarea id="texto-i" placeholder="Consulta con el enlace original de la noticia: ¿Quién la publica?, ¿qué sabemos de ese medio?..."></textarea>
           <button type="button" class="btn-ia" data-fase="I" data-campo="texto-i" style="margin-top: 8px; width: 100%;">💡 Ayuda IA (I)</button>
           <div class="ia-response" id="ia-resp-I"></div>
         </div>
         <div class="subcard">
           <h4>B · Búsqueda externa</h4>
-          <textarea id="texto-b" placeholder="Lectura lateral..."></textarea>
+          <textarea id="texto-b" placeholder="Busca esta misma noticia en otros medios: ¿cuentan lo mismo igual o diferente?..."></textarea>
           <button type="button" class="btn-ia" data-fase="B" data-campo="texto-b" style="margin-top: 8px; width: 100%;">💡 Ayuda IA (B)</button>
           <div class="ia-response" id="ia-resp-B"></div>
         </div>
@@ -284,7 +284,7 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
         <option value="Falsa / Engañosa con interés oculto">❌ Falsa / Bulo</option>
       </select>
       <label for="texto-argumento">2. Argumentación conjunta</label>
-      <textarea id="texto-argumento" placeholder="Conectad R, I y B..."></textarea>
+      <textarea id="texto-argumento" placeholder="Conectad R, I y B: ¿en qué os basáis para el veredicto que habéis dado?"></textarea>
       <div class="actions-row" style="justify-content: space-between;">
         <button type="button" class="btn-ia" data-fase="A" data-campo="texto-argumento">🔍 Revisar argumento</button>
         <button type="button" class="btn-primary" id="btn-abrir-masc">Pasar a +C →</button>
@@ -305,7 +305,7 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
 
     <section class="zona-card" id="zona-contamos">
       <div class="zona-header"><h2 class="zona-title">📢 Contamos · Entrega final</h2><span class="badge-time">3 min</span></div>
-      <label for="texto-guion">Escribimos con nuestras propias palabras lo más importante que hemos confirmado de la noticia</label>
+      <label for="texto-guion">Escribimos con nuestras propias palabras lo más importante que hemos confirmado de la noticia o aquellos aspectos de los que tenemos dudas</label>
       <textarea id="texto-guion" placeholder="Hemos confirmado..."></textarea>
       <div class="actions-row" style="margin-top: 20px;">
         <button type="button" class="btn-success" id="btn-descargar-pdf">📄 Descargar PDF</button>
@@ -328,7 +328,7 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
       <label for="profe-cuerpo">Cuerpo completo de la noticia</label><textarea id="profe-cuerpo" placeholder="Pega el texto..."></textarea>
       <label for="profe-enlace">Fuente / URL</label><input type="text" id="profe-enlace" placeholder="https://..." />
       <div class="actions-row">
-        <button type="button" class="btn-primary" id="btn-crear-sesion">Guardar noticia en Excel</button>
+        <button type="button" class="btn-primary" id="btn-crear-sesion">Guardar noticia</button>
         <span id="profe-estado" style="font-weight: 600; color: #16a34a;"></span>
       </div>
     </div>
