@@ -123,15 +123,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn3) btn3.classList.remove('btn-primary');
       if (cardB) cardB.classList.add('hidden');
       if (boxLectura3) boxLectura3.classList.add('hidden');
-      if (labelR) labelR.textContent = 'Analista R + mitad B (Portavoz)';
-      if (labelI) labelI.textContent = 'Rastreador I + mitad B (Moderador)';
+      if (labelR) labelR.textContent = 'Rol de Analista de Redacción (R) y a medias rol de Búsqueda Externa (B)';
+      if (labelI) labelI.textContent = 'Rol de Rastreador de Informador (I) y a medias rol de Búsqueda Externa (B)';
     } else {
       if (btn3) btn3.classList.add('btn-primary');
       if (btn2) btn2.classList.remove('btn-primary');
       if (cardB) cardB.classList.remove('hidden');
       if (boxLectura3) boxLectura3.classList.remove('hidden');
-      if (labelR) labelR.textContent = 'Rol de Analista de Redacción (R) y a medias rol de Búsqueda Externa (B)';
-      if (labelI) labelI.textContent = 'Rol de Rastreador de Informador (I) y a medias rol de Búsqueda Externa (B)';
+      if (labelR) labelR.textContent = 'Rol de Analista de Redacción (R)';
+      if (labelI) labelI.textContent = 'Rol de Rastreador de Informador (I)';
     }
     guardarLocal();
   }
