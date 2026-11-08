@@ -130,8 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn2) btn2.classList.remove('btn-primary');
       if (cardB) cardB.classList.remove('hidden');
       if (boxLectura3) boxLectura3.classList.remove('hidden');
-      if (labelR) labelR.textContent = 'Analista del texto (Columna R · Portavoz)';
-      if (labelI) labelI.textContent = 'Rastreador de fuentes (Columna I · Moderador)';
+      if (labelR) labelR.textContent = 'Rol de Analista de Redacción (R) y a medias rol de Búsqueda Externa (B)';
+      if (labelI) labelI.textContent = 'Rol de Rastreador de Informador (I) y a medias rol de Búsqueda Externa (B)';
     }
     guardarLocal();
   }
