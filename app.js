@@ -21,11 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
     'select-veredicto', 'texto-argumento', 'texto-contraste', 'texto-guion'
   ];
 
-  // Clave dinámica por código de sesión y grupo para no machacar datos entre equipos
+  // Une el número de grupo y su contraseña para que ningún otro equipo pueda recuperar ni pisar su trabajo
+  function obtenerGrupoConClave() {
+    const grp = (document.getElementById('select-grupo')?.value || 'Grupo 1').trim();
+    const pass = (document.getElementById('input-clave-grupo')?.value || '').trim();
+    return pass ? `${grp}::${pass}` : grp;
+  }
+
   function obtenerStorageKey() {
     const cod = (document.getElementById('input-codigo')?.value || 'DEMO').trim().toUpperCase();
-    const grp = (document.getElementById('select-grupo')?.value || 'Grupo 1').trim();
-    return `cribac_v8_${cod}_${grp}`;
+    const grpClave = obtenerGrupoConClave();
+    return `cribac_v9_${cod}_${grpClave}`;
   }
 
   // Ajusta automáticamente la altura de los cuadros y sincroniza los bloques espejo para el PDF
@@ -260,10 +266,16 @@ document.addEventListener('DOMContentLoaded', () => {
     guardarLocal();
   }
 
-  async function conectarYRecuperar(forzarMensajeNube) {
+  async function conectarYRecuperar(esRecuperacionExplicita) {
     const codigo = (document.getElementById('input-codigo').value || 'DEMO').trim().toUpperCase();
-    const grupo = document.getElementById('select-grupo').value;
+    const grupoVisible = document.getElementById('select-grupo').value;
+    const claveGrupo = (document.getElementById('input-clave-grupo')?.value || '').trim();
     const estado = document.getElementById('estado-conexion');
+
+    if (esRecuperacionExplicita && !claveGrupo) {
+      alert('🔑 Escribid la Contraseña o PIN de vuestro equipo para poder recuperar vuestra entrega de la nube.');
+      return;
+    }
 
     try {
       if (estado) estado.textContent = '⏳ Conectando con la nube...';
@@ -280,16 +292,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       let cargado = false;
-      try {
-        const resEntrega = await fetch(`/api/ia?accion=cargar_entrega&codigo=${encodeURIComponent(codigo)}&grupo=${encodeURIComponent(grupo)}`);
-        if (resEntrega.ok) {
-          const dataE = await resEntrega.json();
-          if (dataE && dataE.entrega) {
-            volcarEntregaEnFormulario(dataE.entrega);
-            cargado = true;
+      if (claveGrupo) {
+        try {
+          const grupoConClave = obtenerGrupoConClave();
+          const resEntrega = await fetch(`/api/ia?accion=cargar_entrega&codigo=${encodeURIComponent(codigo)}&grupo=${encodeURIComponent(grupoConClave)}`);
+          if (resEntrega.ok) {
+            const dataE = await resEntrega.json();
+            if (dataE && dataE.entrega) {
+              volcarEntregaEnFormulario(dataE.entrega);
+              cargado = true;
+            }
           }
-        }
-      } catch (ex) {}
+        } catch (ex) {}
+      }
 
       if (!cargado) {
         cargarLocal();
@@ -297,16 +312,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (estado) {
         if (cargado) {
-          estado.textContent = `✅ ¡Entrega de ${grupo} (${codigo}) recuperada desde la nube!`;
-        } else if (forzarMensajeNube) {
-          estado.textContent = `ℹ️ No había entregas en la nube para ${grupo} (${codigo}); se mantiene vuestro borrador local.`;
+          estado.textContent = `✅ ¡Entrega de ${grupoVisible} (${codigo}) recuperada con éxito!`;
+        } else if (esRecuperacionExplicita) {
+          estado.textContent = `⚠️ No se encontró ninguna entrega en la nube para ${grupoVisible} con esa contraseña.`;
         } else {
-          estado.textContent = `✅ Sesión ${codigo} conectada para ${grupo}. ¡Todo listo!`;
+          estado.textContent = `✅ Sesión ${codigo} conectada para ${grupoVisible}. ¡Todo listo!`;
         }
       }
     } catch (err) {
       cargarLocal();
-      if (estado) estado.textContent = `✅ Modo local activo (${codigo} - ${grupo})`;
+      if (estado) estado.textContent = `✅ Modo local activo (${codigo} - ${grupoVisible})`;
     }
   }
 
@@ -320,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnRecuperarNube.addEventListener('click', () => conectarYRecuperar(true));
   }
 
-  // Al cambiar de grupo o de código en el selector, carga su propio borrador local sin pisar el anterior
+  // Al cambiar de grupo, código o contraseña, carga solo el borrador local que coincida con esa combinación
   document.getElementById('select-grupo')?.addEventListener('change', () => {
     localStorage.setItem('cribac_ultimo_grupo', document.getElementById('select-grupo').value);
     cargarLocal();
@@ -329,6 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('cribac_ultimo_codigo', document.getElementById('input-codigo').value);
     cargarLocal();
   });
+  document.getElementById('input-clave-grupo')?.addEventListener('change', cargarLocal);
 
   document.querySelectorAll('.btn-ia').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -369,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
             titular: document.getElementById('noticia-titular').textContent,
             cuerpo: document.getElementById('noticia-cuerpo').textContent,
             codigo: document.getElementById('input-codigo').value,
-            grupo: document.getElementById('select-grupo').value
+            grupo: obtenerGrupoConClave()
           })
         });
 
@@ -386,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
               titular: document.getElementById('noticia-titular').textContent,
               cuerpo: document.getElementById('noticia-cuerpo').textContent,
               codigo: document.getElementById('input-codigo').value,
-              grupo: document.getElementById('select-grupo').value
+              grupo: obtenerGrupoConClave()
             })
           });
           data = await res.json();
@@ -428,14 +444,22 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnEnviar) {
     btnEnviar.textContent = '💾 Guardar';
     btnEnviar.addEventListener('click', async () => {
-      guardarLocal();
+      const claveGrupo = (document.getElementById('input-clave-grupo')?.value || '').trim();
       const msg = document.getElementById('mensaje-entrega');
-      if (msg) msg.textContent = '📤 Guardando...';
+
+      if (!claveGrupo) {
+        alert('🔑 Antes de guardar en la nube, escribid una Contraseña o PIN para vuestro equipo arriba (en la Zona Preparación) para que ningún otro grupo pueda abrir vuestro trabajo.');
+        irAZona('zona-prep');
+        return;
+      }
+
+      guardarLocal();
+      if (msg) msg.textContent = '📤 Guardando con vuestra contraseña...';
 
       const payload = {
         accion: 'guardar_entrega',
         codigo: document.getElementById('input-codigo').value.trim().toUpperCase(),
-        grupo: document.getElementById('select-grupo').value,
+        grupo: obtenerGrupoConClave(),
         roles: `R: ${document.getElementById('rol-r').value} | I: ${document.getElementById('rol-i').value} | B: ${document.getElementById('rol-b').value}`,
         emocion: document.getElementById('select-emocion').value,
         impulso: document.getElementById('select-impulso').value,
@@ -457,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (msg) msg.textContent = '✅ ¡Guardado correctamente!';
+        if (msg) msg.textContent = '✅ ¡Guardado correctamente con contraseña!';
       } catch (e) {
         if (msg) msg.textContent = '✅ ¡Guardado correctamente!';
       }
@@ -523,7 +547,6 @@ document.addEventListener('DOMContentLoaded', () => {
         selGrp.dataset.cambiadoManual = '1';
       }
 
-      // Limpiamos primero para no arrastrar datos de otro grupo
       CAMPOS_GUARDADO.forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.value = '';
@@ -532,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
       aiConsultadaA = false;
       mostrarNoticiaDesbloqueada(false);
 
-      const raw = localStorage.getItem(obtenerStorageKey()) || localStorage.getItem('cribac_estado_v7');
+      const raw = localStorage.getItem(obtenerStorageKey());
       if (raw) {
         const datos = JSON.parse(raw);
         if (datos.tamanoGrupo) actualizarTamanoGrupo(datos.tamanoGrupo);
@@ -559,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.querySelectorAll('input, textarea, select').forEach((el) => {
-    if (el.id !== 'input-codigo' && el.id !== 'select-grupo') {
+    if (el.id !== 'input-codigo' && el.id !== 'select-grupo' && el.id !== 'input-clave-grupo') {
       el.addEventListener('input', guardarLocal);
       el.addEventListener('change', guardarLocal);
     }
