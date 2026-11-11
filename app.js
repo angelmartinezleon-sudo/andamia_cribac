@@ -1,12 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const STORAGE_KEY = 'cribac_estado_v7';
   let consultasIA = 0;
   const MAX_IA = 12;
   let tamanoGrupo = 3;
   let segundosRestantes = 120;
   let faseActual = 'Preparación';
-  let aiConsultadaA = false; 
-  let cuerpoDesbloqueado = false; // <-- Nueva variable para controlar la noticia
+  let aiConsultadaA = false;
+  let cuerpoDesbloqueado = false;
+
+  const TEXTAREAS_ALUMNO = [
+    'texto-corazonada', 'lectura-1', 'lectura-2', 'lectura-3',
+    'sintesis-lectura', 'texto-r', 'texto-i', 'texto-b',
+    'texto-argumento', 'texto-contraste', 'texto-guion'
+  ];
+
+  const CAMPOS_GUARDADO = [
+    'rol-r', 'rol-i', 'rol-b',
+    'select-emocion', 'select-impulso', 'texto-corazonada',
+    'lectura-1', 'lectura-2', 'lectura-3', 'sintesis-lectura',
+    'texto-r', 'texto-i', 'texto-b',
+    'select-veredicto', 'texto-argumento', 'texto-contraste', 'texto-guion'
+  ];
+
+  // Clave dinámica por código de sesión y grupo para no machacar datos entre equipos
+  function obtenerStorageKey() {
+    const cod = (document.getElementById('input-codigo')?.value || 'DEMO').trim().toUpperCase();
+    const grp = (document.getElementById('select-grupo')?.value || 'Grupo 1').trim();
+    return `cribac_v8_${cod}_${grp}`;
+  }
+
+  // Ajusta automáticamente la altura de los cuadros y sincroniza los bloques espejo para el PDF
+  function sincronizarCajasTexto() {
+    TEXTAREAS_ALUMNO.forEach((id) => {
+      const ta = document.getElementById(id);
+      const mirror = document.getElementById(`mirror-${id}`);
+      if (ta) {
+        ta.style.height = 'auto';
+        ta.style.height = Math.max(90, ta.scrollHeight) + 'px';
+        if (mirror) {
+          mirror.textContent = ta.value.trim() || '(Sin respuesta registrada)';
+        }
+      }
+    });
+  }
 
   const TIEMPOS_FASE = {
     'zona-prep': { nombre: 'Preparación', seg: 120 },
@@ -72,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const b = document.getElementById(idBtn);
     if (b) {
       b.addEventListener('click', (e) => {
-        
         // 1. Bloqueo de R·I·B (Obliga a rellenar Corazonada)
         if (idBtn === 'btn-abrir-rib') {
           const em = document.getElementById('select-emocion').value;
@@ -83,20 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('⚠️ Obligatorio: Rellenad la emoción, el impulso y vuestra corazonada para poder desbloquear el texto de la noticia.');
             return;
           }
-          // Si pasa, desbloqueamos la noticia
-          cuerpoDesbloqueado = true;
-          const boxNoticia = document.getElementById('box-noticia-rib');
-          const avisoBloqueo = document.getElementById('aviso-bloqueo-rib');
-          if (boxNoticia) boxNoticia.classList.remove('hidden');
-          if (avisoBloqueo) avisoBloqueo.classList.add('hidden');
+          mostrarNoticiaDesbloqueada(true);
         }
 
         // 2. Bloqueo de MASC (Obliga a pedir IA en Argumento)
         if (idBtn === 'btn-abrir-masc' && !aiConsultadaA) {
           e.preventDefault();
           const boxResp = document.getElementById('ia-resp-A');
-          if(boxResp) {
-            boxResp.textContent = '⚠️ Obligatorio: Debéis darle a "Revisar argumento" y esperar la respuesta de la IA antes de avanzar.';
+          if (boxResp) {
+            boxResp.textContent = '⚠️ Obligatorio: Debéis darle a "Revisar argumento (Obligatorio)" y esperar la respuesta de la IA antes de avanzar.';
             boxResp.classList.add('visible');
           } else {
             alert('⚠️ Obligatorio: Debéis revisar el argumento con la IA antes de pasar a la siguiente fase.');
@@ -109,6 +138,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function mostrarNoticiaDesbloqueada(desbloquear) {
+    cuerpoDesbloqueado = desbloquear;
+    const boxNoticia = document.getElementById('box-noticia-rib');
+    const avisoBloqueo = document.getElementById('aviso-bloqueo-rib');
+    if (desbloquear) {
+      if (boxNoticia) boxNoticia.classList.remove('hidden');
+      if (avisoBloqueo) avisoBloqueo.classList.add('hidden');
+    } else {
+      if (boxNoticia) boxNoticia.classList.add('hidden');
+      if (avisoBloqueo) avisoBloqueo.classList.remove('hidden');
+    }
+  }
+
   function actualizarTamanoGrupo(num) {
     tamanoGrupo = num;
     const btn2 = document.getElementById('btn-somos-2');
@@ -117,6 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const boxLectura3 = document.getElementById('box-lectura-3');
     const labelR = document.getElementById('label-rol-r');
     const labelI = document.getElementById('label-rol-i');
+    const labelLectura1 = document.getElementById('label-lectura-1');
+    const labelLectura2 = document.getElementById('label-lectura-2');
+    const labelLectura3 = document.getElementById('label-lectura-3');
 
     if (num === 2) {
       if (btn2) btn2.classList.add('btn-primary');
@@ -125,6 +170,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (boxLectura3) boxLectura3.classList.add('hidden');
       if (labelR) labelR.textContent = 'Rol de Analista de Redacción (R) y a medias rol de Búsqueda Externa (B)';
       if (labelI) labelI.textContent = 'Rol de Rastreador de Informador (I) y a medias rol de Búsqueda Externa (B)';
+      if (labelLectura1) labelLectura1.textContent = 'Lector 1 (Rol de Analista de Redacción - R y a medias Búsqueda Externa - B)';
+      if (labelLectura2) labelLectura2.textContent = 'Lector 2 (Rol de Rastreador de Informador - I y a medias Búsqueda Externa - B)';
     } else {
       if (btn3) btn3.classList.add('btn-primary');
       if (btn2) btn2.classList.remove('btn-primary');
@@ -132,6 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (boxLectura3) boxLectura3.classList.remove('hidden');
       if (labelR) labelR.textContent = 'Rol de Analista de Redacción (R)';
       if (labelI) labelI.textContent = 'Rol de Rastreador de Informador (I)';
+      if (labelLectura1) labelLectura1.textContent = 'Lector 1 (Rol de Analista de Redacción - R)';
+      if (labelLectura2) labelLectura2.textContent = 'Lector 2 (Rol de Rastreador de Informador - I)';
+      if (labelLectura3) labelLectura3.textContent = 'Lector 3 (Rol de Búsqueda externa - B)';
     }
     guardarLocal();
   }
@@ -156,83 +206,129 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const btnConectar = document.getElementById('btn-conectar');
-  if (btnConectar) {
-    btnConectar.addEventListener('click', async () => {
-      const codigo = (document.getElementById('input-codigo').value || 'DEMO').trim().toUpperCase();
-      const grupo = document.getElementById('select-grupo').value;
-      const estado = document.getElementById('estado-conexion');
-      
+  function volcarEntregaEnFormulario(e) {
+    CAMPOS_GUARDADO.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    if (e.roles) {
+      const partes = e.roles.split('|');
+      if (partes[0]) {
+        const valR = partes[0].replace('R:', '').trim();
+        const inpR = document.getElementById('rol-r');
+        if (inpR && valR !== 'undefined') inpR.value = valR;
+      }
+      if (partes[1]) {
+        const valI = partes[1].replace('I:', '').trim();
+        const inpI = document.getElementById('rol-i');
+        if (inpI && valI !== 'undefined') inpI.value = valI;
+      }
+      if (partes[2]) {
+        const valB = partes[2].replace('B:', '').trim();
+        const inpB = document.getElementById('rol-b');
+        if (inpB && valB !== 'undefined') inpB.value = valB;
+      }
+    }
+
+    if (e.emocion) document.getElementById('select-emocion').value = e.emocion;
+    if (e.impulso) document.getElementById('select-impulso').value = e.impulso;
+    if (e.corazonada) document.getElementById('texto-corazonada').value = e.corazonada;
+    if (e.lectura_grupo) document.getElementById('sintesis-lectura').value = e.lectura_grupo;
+    if (e.texto_r) document.getElementById('texto-r').value = e.texto_r;
+    if (e.texto_i) document.getElementById('texto-i').value = e.texto_i;
+    if (e.texto_b) document.getElementById('texto-b').value = e.texto_b;
+    if (e.veredicto) document.getElementById('select-veredicto').value = e.veredicto;
+    if (e.argumento) document.getElementById('texto-argumento').value = e.argumento;
+    if (e.contraste) document.getElementById('texto-contraste').value = e.contraste;
+    if (e.guion) document.getElementById('texto-guion').value = e.guion;
+
+    if (e.emocion && e.impulso && (e.corazonada || '').trim().length >= 5) {
+      mostrarNoticiaDesbloqueada(true);
+    }
+
+    if (e.argumento && (e.argumento || '').trim().length >= 5) {
+      aiConsultadaA = true;
+    }
+
+    if (e.consultas_ia !== undefined) {
+      consultasIA = parseInt(e.consultas_ia, 10) || 0;
+      const contador = document.getElementById('contador-ia');
+      if (contador) contador.textContent = consultasIA;
+    }
+
+    guardarLocal();
+  }
+
+  async function conectarYRecuperar(forzarMensajeNube) {
+    const codigo = (document.getElementById('input-codigo').value || 'DEMO').trim().toUpperCase();
+    const grupo = document.getElementById('select-grupo').value;
+    const estado = document.getElementById('estado-conexion');
+
+    try {
+      if (estado) estado.textContent = '⏳ Conectando con la nube...';
+
+      const resSesion = await fetch(`/api/ia?accion=sesion&codigo=${encodeURIComponent(codigo)}`);
+      if (resSesion.ok) {
+        const data = await resSesion.json();
+        if (data && data.sesion) {
+          document.getElementById('noticia-titular').textContent = data.sesion.titular;
+          document.getElementById('noticia-entradilla').textContent = data.sesion.entradilla;
+          document.getElementById('noticia-cuerpo').textContent = data.sesion.cuerpo;
+          document.getElementById('noticia-enlace').textContent = data.sesion.enlace_original || '';
+        }
+      }
+
+      let cargado = false;
       try {
-        if (estado) estado.textContent = 'Conectando con la nube...';
-        
-        const resSesion = await fetch(`/api/ia?accion=sesion&codigo=${encodeURIComponent(codigo)}`);
-        if (resSesion.ok) {
-          const data = await resSesion.json();
-          if (data && data.sesion) {
-            document.getElementById('noticia-titular').textContent = data.sesion.titular;
-            document.getElementById('noticia-entradilla').textContent = data.sesion.entradilla;
-            document.getElementById('noticia-cuerpo').textContent = data.sesion.cuerpo;
-            document.getElementById('noticia-enlace').textContent = data.sesion.enlace_original || '';
+        const resEntrega = await fetch(`/api/ia?accion=cargar_entrega&codigo=${encodeURIComponent(codigo)}&grupo=${encodeURIComponent(grupo)}`);
+        if (resEntrega.ok) {
+          const dataE = await resEntrega.json();
+          if (dataE && dataE.entrega) {
+            volcarEntregaEnFormulario(dataE.entrega);
+            cargado = true;
           }
         }
+      } catch (ex) {}
 
-        let cargado = false;
-        try {
-          const resEntrega = await fetch(`/api/ia?accion=cargar_entrega&codigo=${encodeURIComponent(codigo)}&grupo=${encodeURIComponent(grupo)}`);
-          if (resEntrega.ok) {
-            const dataE = await resEntrega.json();
-            if (dataE && dataE.entrega) {
-              const e = dataE.entrega;
-              if (e.roles) {
-                const partes = e.roles.split('|');
-                if (partes[0]) {
-                  const valR = partes[0].replace('R:', '').trim();
-                  const inpR = document.getElementById('rol-r');
-                  if (inpR && valR !== 'undefined') inpR.value = valR;
-                }
-                if (partes[1]) {
-                  const valI = partes[1].replace('I:', '').trim();
-                  const inpI = document.getElementById('rol-i');
-                  if (inpI && valI !== 'undefined') inpI.value = valI;
-                }
-                if (partes[2]) {
-                  const valB = partes[2].replace('B:', '').trim();
-                  const inpB = document.getElementById('rol-b');
-                  if (inpB && valB !== 'undefined') inpB.value = valB;
-                }
-              }
-
-              if (e.emocion) document.getElementById('select-emocion').value = e.emocion;
-              if (e.impulso) document.getElementById('select-impulso').value = e.impulso;
-              if (e.corazonada) document.getElementById('texto-corazonada').value = e.corazonada;
-              if (e.lectura_grupo) document.getElementById('sintesis-lectura').value = e.lectura_grupo;
-              if (e.texto_r) document.getElementById('texto-r').value = e.texto_r;
-              if (e.texto_i) document.getElementById('texto-i').value = e.texto_i;
-              if (e.texto_b) document.getElementById('texto-b').value = e.texto_b;
-              if (e.veredicto) document.getElementById('select-veredicto').value = e.veredicto;
-              if (e.argumento) document.getElementById('texto-argumento').value = e.argumento;
-              if (e.contraste) document.getElementById('texto-contraste').value = e.contraste;
-              if (e.guion) document.getElementById('texto-guion').value = e.guion;
-              
-              if (e.consultas_ia) {
-                consultasIA = parseInt(e.consultas_ia) || 0;
-                const contador = document.getElementById('contador-ia');
-                if (contador) contador.textContent = consultasIA;
-              }
-              cargado = true;
-            }
-          }
-        } catch (ex) {}
-
-        if (!cargado) cargarLocal();
-        if (estado) estado.textContent = `✅ Sesión ${codigo} conectada para ${grupo}. ¡Todo listo!`;
-      } catch (err) {
+      if (!cargado) {
         cargarLocal();
-        if (estado) estado.textContent = `✅ Modo local activo (${codigo})`;
       }
-    });
+
+      if (estado) {
+        if (cargado) {
+          estado.textContent = `✅ ¡Entrega de ${grupo} (${codigo}) recuperada desde la nube!`;
+        } else if (forzarMensajeNube) {
+          estado.textContent = `ℹ️ No había entregas en la nube para ${grupo} (${codigo}); se mantiene vuestro borrador local.`;
+        } else {
+          estado.textContent = `✅ Sesión ${codigo} conectada para ${grupo}. ¡Todo listo!`;
+        }
+      }
+    } catch (err) {
+      cargarLocal();
+      if (estado) estado.textContent = `✅ Modo local activo (${codigo} - ${grupo})`;
+    }
   }
+
+  const btnConectar = document.getElementById('btn-conectar');
+  if (btnConectar) {
+    btnConectar.addEventListener('click', () => conectarYRecuperar(false));
+  }
+
+  const btnRecuperarNube = document.getElementById('btn-recuperar-nube');
+  if (btnRecuperarNube) {
+    btnRecuperarNube.addEventListener('click', () => conectarYRecuperar(true));
+  }
+
+  // Al cambiar de grupo o de código en el selector, carga su propio borrador local sin pisar el anterior
+  document.getElementById('select-grupo')?.addEventListener('change', () => {
+    localStorage.setItem('cribac_ultimo_grupo', document.getElementById('select-grupo').value);
+    cargarLocal();
+  });
+  document.getElementById('input-codigo')?.addEventListener('change', () => {
+    localStorage.setItem('cribac_ultimo_codigo', document.getElementById('input-codigo').value);
+    cargarLocal();
+  });
 
   document.querySelectorAll('.btn-ia').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -249,9 +345,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return;
       }
-      if (consultasIA >= MAX_IA) {
+
+      // La revisión del argumento (fase A) es obligatoria y NO consume ni se bloquea por los 12 intentos de ayuda
+      if (fase !== 'A' && consultasIA >= MAX_IA) {
         if (boxResp) {
-          boxResp.textContent = 'Límite de 12 consultas alcanzado.';
+          boxResp.textContent = 'Límite de 12 consultas de ayuda alcanzado.';
           boxResp.classList.add('visible');
         }
         return;
@@ -276,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         let data = await res.json();
-        
+
         if (data.error && data.error.includes('demand')) {
           if (boxResp) boxResp.textContent = '⏳ Tráfico denso, reintentando...';
           await new Promise(r => setTimeout(r, 1200));
@@ -294,18 +392,22 @@ document.addEventListener('DOMContentLoaded', () => {
           data = await res.json();
         }
 
-        consultasIA++;
-        const contador = document.getElementById('contador-ia');
-        if (contador) contador.textContent = consultasIA;
+        // Solo sumamos al contador de 12 ayudas si NO es la revisión obligatoria de la fase A
+        if (fase !== 'A') {
+          consultasIA++;
+          const contador = document.getElementById('contador-ia');
+          if (contador) contador.textContent = consultasIA;
+        }
+
         if (boxResp) boxResp.textContent = '🤖 ' + (data.respuesta || data.error);
-        
+
         if (fase === 'A' && !data.error) {
           aiConsultadaA = true;
         }
 
       } catch (err) {
         if (boxResp) boxResp.textContent = '🤖 Ayuda: ¿Qué pruebas concretas ofrece el texto para sostener esto?';
-        if (fase === 'A') aiConsultadaA = true; 
+        if (fase === 'A') aiConsultadaA = true;
       }
       guardarLocal();
     });
@@ -315,9 +417,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnPdf) {
     btnPdf.addEventListener('click', (e) => {
       e.preventDefault();
+      sincronizarCajasTexto();
       window.print();
     });
   }
+
+  window.addEventListener('beforeprint', sincronizarCajasTexto);
 
   const btnEnviar = document.getElementById('btn-enviar-profe');
   if (btnEnviar) {
@@ -329,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const payload = {
         accion: 'guardar_entrega',
-        codigo: document.getElementById('input-codigo').value,
+        codigo: document.getElementById('input-codigo').value.trim().toUpperCase(),
         grupo: document.getElementById('select-grupo').value,
         roles: `R: ${document.getElementById('rol-r').value} | I: ${document.getElementById('rol-i').value} | B: ${document.getElementById('rol-b').value}`,
         emocion: document.getElementById('select-emocion').value,
@@ -395,58 +500,69 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function guardarLocal() {
-    const campos = [
-      'input-codigo', 'select-grupo', 'rol-r', 'rol-i', 'rol-b',
-      'select-emocion', 'select-impulso', 'texto-corazonada',
-      'lectura-1', 'lectura-2', 'lectura-3', 'sintesis-lectura',
-      'texto-r', 'texto-i', 'texto-b',
-      'select-veredicto', 'texto-argumento', 'texto-contraste', 'texto-guion'
-    ];
-    // ¡Añadida la variable del cuerpo bloqueado a los datos guardados!
+    sincronizarCajasTexto();
     const datos = { tamanoGrupo, consultasIA, aiConsultadaA, cuerpoDesbloqueado, valores: {} };
-    campos.forEach((id) => {
+    CAMPOS_GUARDADO.forEach((id) => {
       const el = document.getElementById(id);
       if (el) datos.valores[id] = el.value;
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
+    localStorage.setItem('cribac_ultimo_codigo', document.getElementById('input-codigo')?.value || 'DEMO');
+    localStorage.setItem('cribac_ultimo_grupo', document.getElementById('select-grupo')?.value || 'Grupo 1');
+    localStorage.setItem(obtenerStorageKey(), JSON.stringify(datos));
   }
 
   function cargarLocal() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const datos = JSON.parse(raw);
-      if (datos.tamanoGrupo) actualizarTamanoGrupo(datos.tamanoGrupo);
-      if (datos.consultasIA) {
-        consultasIA = datos.consultasIA;
-        const contador = document.getElementById('contador-ia');
-        if (contador) contador.textContent = consultasIA;
-      }
-      if (datos.aiConsultadaA !== undefined) {
-        aiConsultadaA = datos.aiConsultadaA;
-      }
-      
-      // Si la noticia ya estaba desbloqueada antes de recargar la página, se la mostramos
-      if (datos.cuerpoDesbloqueado) {
-        cuerpoDesbloqueado = true;
-        const boxNoticia = document.getElementById('box-noticia-rib');
-        const avisoBloqueo = document.getElementById('aviso-bloqueo-rib');
-        if (boxNoticia) boxNoticia.classList.remove('hidden');
-        if (avisoBloqueo) avisoBloqueo.classList.add('hidden');
+      const uCod = localStorage.getItem('cribac_ultimo_codigo');
+      const uGrp = localStorage.getItem('cribac_ultimo_grupo');
+      const inpCod = document.getElementById('input-codigo');
+      const selGrp = document.getElementById('select-grupo');
+      if (uCod && inpCod && inpCod.value === 'DEMO') inpCod.value = uCod;
+      if (uGrp && selGrp && !selGrp.dataset.cambiadoManual) {
+        selGrp.value = uGrp;
+        selGrp.dataset.cambiadoManual = '1';
       }
 
-      if (datos.valores) {
-        Object.entries(datos.valores).forEach(([id, val]) => {
-          const el = document.getElementById(id);
-          if (el && val !== undefined) el.value = val;
-        });
+      // Limpiamos primero para no arrastrar datos de otro grupo
+      CAMPOS_GUARDADO.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      consultasIA = 0;
+      aiConsultadaA = false;
+      mostrarNoticiaDesbloqueada(false);
+
+      const raw = localStorage.getItem(obtenerStorageKey()) || localStorage.getItem('cribac_estado_v7');
+      if (raw) {
+        const datos = JSON.parse(raw);
+        if (datos.tamanoGrupo) actualizarTamanoGrupo(datos.tamanoGrupo);
+        if (datos.consultasIA) {
+          consultasIA = datos.consultasIA;
+        }
+        if (datos.aiConsultadaA !== undefined) {
+          aiConsultadaA = datos.aiConsultadaA;
+        }
+        if (datos.cuerpoDesbloqueado) {
+          mostrarNoticiaDesbloqueada(true);
+        }
+        if (datos.valores) {
+          CAMPOS_GUARDADO.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el && datos.valores[id] !== undefined) el.value = datos.valores[id];
+          });
+        }
       }
+      const contador = document.getElementById('contador-ia');
+      if (contador) contador.textContent = consultasIA;
+      sincronizarCajasTexto();
     } catch (e) {}
   }
 
   document.querySelectorAll('input, textarea, select').forEach((el) => {
-    el.addEventListener('input', guardarLocal);
-    el.addEventListener('change', guardarLocal);
+    if (el.id !== 'input-codigo' && el.id !== 'select-grupo') {
+      el.addEventListener('input', guardarLocal);
+      el.addEventListener('change', guardarLocal);
+    }
   });
 
   cargarLocal();
