@@ -68,7 +68,7 @@
     .noticia-entradilla { font-size: 1.05rem; color: #475569; font-weight: 500; margin-bottom: 14px; }
     .noticia-cuerpo { background: #ffffff; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; white-space: pre-line; line-height: 1.65; }
     .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
     .subcard { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
     .subcard h4 { margin-top: 0; margin-bottom: 8px; color: #0f172a; }
     label { display: block; font-weight: 600; font-size: 0.9rem; margin: 12px 0 6px; color: #334155; }
@@ -166,7 +166,7 @@
         <h2 class="zona-title">Zona Preparación · Equipo y Roles</h2>
         <span class="badge-time">2 min</span>
       </div>
-      <div class="grid-2">
+      <div class="grid-3">
         <div>
           <label for="input-codigo">1. Código de sesión (ej. ESO3)</label>
           <input type="text" id="input-codigo" value="DEMO" maxlength="8" />
@@ -200,6 +200,10 @@
             <option value="Grupo 24">Grupo 24</option>
             <option value="Grupo 25">Grupo 25</option>
           </select>
+        </div>
+        <div class="no-print">
+          <label for="input-clave-grupo">Contraseña o PIN del equipo</label>
+          <input type="password" id="input-clave-grupo" placeholder="Elige una clave para el grupo" />
         </div>
       </div>
       <div class="actions-row">
