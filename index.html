@@ -76,7 +76,7 @@
       width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
       font-size: 0.95rem; font-family: inherit; background: #ffffff; color: var(--text);
     }
-    textarea { min-height: 90px; resize: vertical; }
+    textarea { min-height: 90px; resize: vertical; overflow-y: hidden; }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
     button, .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -87,15 +87,50 @@
     .btn-primary { background: var(--primary); color: #ffffff; border-color: var(--primary); }
     .btn-ia { background: var(--accent-soft); color: #1d4ed8; border-color: #93c5fd; }
     .btn-success { background: var(--success); color: #ffffff; border-color: var(--success); }
-    .ia-response { margin-top: 10px; padding: 12px; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px; font-size: 0.9rem; color: #1e3a8a; display: none; }
+    .ia-response { margin-top: 10px; padding: 12px; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px; font-size: 0.9rem; color: #1e3a8a; white-space: pre-line; display: none; }
     .ia-response.visible { display: block; }
     .actions-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; align-items: center; }
     .hidden { display: none !important; }
+
+    /* Espejo de impresión para que el PDF muestre todo el texto de los cuadros sin recortar nada */
+    .print-mirror {
+      display: none;
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #94a3b8;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #0f172a;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      min-height: 44px;
+    }
+
     @media print {
       body { background: #ffffff !important; color: #000000 !important; }
       .topbar, .banner-ia, button, .no-print, #vista-profesor { display: none !important; }
       .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-      .zona-card, .noticia-box, .subcard { display: block !important; opacity: 1 !important; filter: none !important; break-inside: avoid; border: 1px solid #94a3b8 !important; margin-bottom: 14px !important; }
+      .zona-card, .noticia-box, .subcard {
+        display: block !important;
+        opacity: 1 !important;
+        filter: none !important;
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+        border: 1px solid #94a3b8 !important;
+        margin-bottom: 14px !important;
+        box-shadow: none !important;
+      }
+      .zona-header { break-after: avoid !important; page-break-after: avoid !important; }
+      .ia-response.visible {
+        display: block !important;
+        break-inside: avoid !important;
+        border: 1px solid #2563eb !important;
+        border-left: 4px solid #2563eb !important;
+      }
+      textarea { display: none !important; }
+      .print-mirror { display: block !important; }
     }
   </style>
 </head>
@@ -137,14 +172,39 @@
           <input type="text" id="input-codigo" value="DEMO" maxlength="8" />
         </div>
         <div>
-          <label for="select-grupo">Número de grupo (1 a 12)</label>
+          <label for="select-grupo">Número de grupo (1 a 25)</label>
           <select id="select-grupo">
-            <option value="Grupo 1">Grupo 1</option><option value="Grupo 2">Grupo 2</option><option value="Grupo 3">Grupo 3</option><option value="Grupo 4">Grupo 4</option><option value="Grupo 5">Grupo 5</option><option value="Grupo 6">Grupo 6</option><option value="Grupo 7">Grupo 7</option><option value="Grupo 8">Grupo 8</option><option value="Grupo 9">Grupo 9</option><option value="Grupo 10">Grupo 10</option><option value="Grupo 11">Grupo 11</option><option value="Grupo 12">Grupo 12</option>
+            <option value="Grupo 1">Grupo 1</option>
+            <option value="Grupo 2">Grupo 2</option>
+            <option value="Grupo 3">Grupo 3</option>
+            <option value="Grupo 4">Grupo 4</option>
+            <option value="Grupo 5">Grupo 5</option>
+            <option value="Grupo 6">Grupo 6</option>
+            <option value="Grupo 7">Grupo 7</option>
+            <option value="Grupo 8">Grupo 8</option>
+            <option value="Grupo 9">Grupo 9</option>
+            <option value="Grupo 10">Grupo 10</option>
+            <option value="Grupo 11">Grupo 11</option>
+            <option value="Grupo 12">Grupo 12</option>
+            <option value="Grupo 13">Grupo 13</option>
+            <option value="Grupo 14">Grupo 14</option>
+            <option value="Grupo 15">Grupo 15</option>
+            <option value="Grupo 16">Grupo 16</option>
+            <option value="Grupo 17">Grupo 17</option>
+            <option value="Grupo 18">Grupo 18</option>
+            <option value="Grupo 19">Grupo 19</option>
+            <option value="Grupo 20">Grupo 20</option>
+            <option value="Grupo 21">Grupo 21</option>
+            <option value="Grupo 22">Grupo 22</option>
+            <option value="Grupo 23">Grupo 23</option>
+            <option value="Grupo 24">Grupo 24</option>
+            <option value="Grupo 25">Grupo 25</option>
           </select>
         </div>
       </div>
       <div class="actions-row">
-        <button type="button" class="btn-primary" id="btn-conectar">Conectar grupo</button>
+        <button type="button" class="btn-primary" id="btn-conectar">🚀 Conectar grupo</button>
+        <button type="button" id="btn-recuperar-nube">☁️ Recuperar entrega previa de la nube</button>
         <span id="estado-conexion" style="font-size: 0.9rem; color: #16a34a; font-weight: 600;"></span>
       </div>
       <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;" />
@@ -208,7 +268,8 @@
         </div>
       </div>
       <label for="texto-corazonada">3. ¿Creéis que este titular llama la atención? ¿Por qué?</label>
-      <textarea id="texto-corazonada" placeholder="Escribid vuestra primera impresión. Podéis pedir ayuda a la IA en este apartado y en otros; después de pedir ayuda podéis reescribir el texto para mejorarlo. Disponéis de 12 consultas (contando con la revisión de argumentación en el apartado Argumentar, en la que es obligatoria la consulta) "></textarea>
+      <textarea id="texto-corazonada" placeholder="Escribid vuestra primera impresión. Podéis pedir ayuda a la IA en este apartado y en otros; después de pedir ayuda podéis reescribir el texto para mejorarlo. Disponéis de 12 consultas de ayuda durante toda la actividad (al margen de la revisión obligatoria del argumento)."></textarea>
+      <div class="print-mirror" id="mirror-texto-corazonada"></div>
       <div class="actions-row" style="justify-content: space-between;">
         <button type="button" class="btn-ia" data-fase="C" data-campo="texto-corazonada">💡 Pedir ayuda a la IA</button>
         <button type="button" class="btn-primary" id="btn-abrir-rib">Desbloquear cuerpo y pasar a R·I·B →</button>
@@ -222,12 +283,12 @@
         <span class="badge-time">15 min</span>
       </div>
 
-      <!-- AVISO DE BLOQUEO (Desaparece al pulsar el botón de desbloqueo) -->
+      <!-- AVISO DE BLOQUEO -->
       <div id="aviso-bloqueo-rib" style="background: #f8fafc; padding: 24px; text-align: center; border-radius: 12px; border: 2px dashed #cbd5e1; margin-bottom: 24px; color: #475569; font-weight: 600;">
         🔒 El texto de la noticia está oculto. Rellenad la fase "Corazonada" (emoción, impulso y texto) y pulsad el botón "Desbloquear cuerpo" para leerlo.
       </div>
 
-      <!-- CUERPO DE LA NOTICIA (Oculto por defecto con la clase hidden) -->
+      <!-- CUERPO DE LA NOTICIA -->
       <div class="noticia-box hidden" id="box-noticia-rib">
         <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #b45309; margin-bottom: 6px;">Texto completo de la noticia</div>
         <div class="noticia-cuerpo" id="noticia-cuerpo">Redacción (14 de marzo). Según circula desde ayer en varias cuentas de redes sociales y en el portal viral AulaExpress, escuchar canciones y pódcast al doble de velocidad (2x) durante veinte minutos al día incrementa hasta un 40 % el rendimiento en los exámenes de 3.º y 4.º de ESO.
@@ -241,30 +302,46 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
       <div class="subcard" style="margin-bottom: 20px; background: #f0fdf4; border-color: #bbf7d0;">
         <h4>📖 Paso 1: Lectura individual y síntesis del grupo</h4>
         <div class="grid-3">
-          <div><label for="lectura-1">Lector 1 (R)</label><textarea id="lectura-1" placeholder="¿Qué dice?"></textarea></div>
-          <div><label for="lectura-2">Lector 2 (I)</label><textarea id="lectura-2" placeholder="¿Qué dice?"></textarea></div>
-          <div id="box-lectura-3"><label for="lectura-3">Lector 3 (B)</label><textarea id="lectura-3" placeholder="¿Qué dice?"></textarea></div>
+          <div>
+            <label for="lectura-1" id="label-lectura-1">Lector 1 (Rol de Analista de Redacción - R)</label>
+            <textarea id="lectura-1" placeholder="¿Qué dice?"></textarea>
+            <div class="print-mirror" id="mirror-lectura-1"></div>
+          </div>
+          <div>
+            <label for="lectura-2" id="label-lectura-2">Lector 2 (Rol de Rastreador de Informador - I)</label>
+            <textarea id="lectura-2" placeholder="¿Qué dice?"></textarea>
+            <div class="print-mirror" id="mirror-lectura-2"></div>
+          </div>
+          <div id="box-lectura-3">
+            <label for="lectura-3" id="label-lectura-3">Lector 3 (Rol de Búsqueda externa - B)</label>
+            <textarea id="lectura-3" placeholder="¿Qué dice?"></textarea>
+            <div class="print-mirror" id="mirror-lectura-3"></div>
+          </div>
         </div>
         <label for="sintesis-lectura">🤝 Acuerdo del grupo sobre el texto:</label>
         <textarea id="sintesis-lectura" placeholder="En resumen..."></textarea>
+        <div class="print-mirror" id="mirror-sintesis-lectura"></div>
       </div>
       <h4 style="margin-bottom: 10px;">🔎 Paso 2: Investigación por columnas (cada columna la rellena el rol correspondiente)</h4>
       <div class="grid-3">
         <div class="subcard">
           <h4>R · Redacción (estilo)</h4>
           <textarea id="texto-r" placeholder="¿Qué tono tiene el texto?, ¿tiene exageraciones?, ¿cómo es la redacción?..."></textarea>
+          <div class="print-mirror" id="mirror-texto-r"></div>
           <button type="button" class="btn-ia" data-fase="R" data-campo="texto-r" style="margin-top: 8px; width: 100%;">💡 Ayuda IA (R)</button>
           <div class="ia-response" id="ia-resp-R"></div>
         </div>
         <div class="subcard">
           <h4>I · Informador (fuente)</h4>
           <textarea id="texto-i" placeholder="Consulta con el enlace original de la noticia: ¿Quién la publica?, ¿qué sabemos de ese medio?..."></textarea>
+          <div class="print-mirror" id="mirror-texto-i"></div>
           <button type="button" class="btn-ia" data-fase="I" data-campo="texto-i" style="margin-top: 8px; width: 100%;">💡 Ayuda IA (I)</button>
           <div class="ia-response" id="ia-resp-I"></div>
         </div>
         <div class="subcard">
           <h4>B · Búsqueda externa</h4>
           <textarea id="texto-b" placeholder="Busca esta misma noticia en otros medios: ¿cuentan lo mismo igual o diferente?..."></textarea>
+          <div class="print-mirror" id="mirror-texto-b"></div>
           <button type="button" class="btn-ia" data-fase="B" data-campo="texto-b" style="margin-top: 8px; width: 100%;">💡 Ayuda IA (B)</button>
           <div class="ia-response" id="ia-resp-B"></div>
         </div>
@@ -285,8 +362,9 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
       </select>
       <label for="texto-argumento">2. Argumentación conjunta</label>
       <textarea id="texto-argumento" placeholder="Conectad R, I y B: ¿en qué os basáis para el veredicto que habéis dado?"></textarea>
+      <div class="print-mirror" id="mirror-texto-argumento"></div>
       <div class="actions-row" style="justify-content: space-between;">
-        <button type="button" class="btn-ia" data-fase="A" data-campo="texto-argumento">🔍 Revisar argumento</button>
+        <button type="button" class="btn-ia" data-fase="A" data-campo="texto-argumento">🔍 Revisar argumento (Obligatorio)</button>
         <button type="button" class="btn-primary" id="btn-abrir-masc">Pasar a +C →</button>
       </div>
       <div class="ia-response" id="ia-resp-A"></div>
@@ -296,6 +374,7 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
       <div class="zona-header"><h2 class="zona-title"><span style="color:#9333ea;">+C</span> · Contraste</h2><span class="badge-time">5 min</span></div>
       <label for="texto-contraste">Si ha cambiado vuestra corazonada: ¿en qué ha cambiado?, ¿por qué ha cambiado? Si no ha cambiado, ¿qué es lo que os ha hecho reafirmaros?</label>
       <textarea id="texto-contraste" placeholder="Al principio..."></textarea>
+      <div class="print-mirror" id="mirror-texto-contraste"></div>
       <div class="actions-row" style="justify-content: space-between;">
         <button type="button" class="btn-ia" data-fase="MASC" data-campo="texto-contraste">💡 Ayuda IA</button>
         <button type="button" class="btn-primary" id="btn-abrir-contamos">Pasar a Contamos →</button>
@@ -307,6 +386,7 @@ Al final del artículo se incluye un enlace promocional para descargar una aplic
       <div class="zona-header"><h2 class="zona-title">📢 Contamos · Entrega final</h2><span class="badge-time">3 min</span></div>
       <label for="texto-guion">Escribimos con nuestras propias palabras lo más importante que hemos confirmado de la noticia o aquellos aspectos de los que tenemos dudas</label>
       <textarea id="texto-guion" placeholder="Hemos confirmado..."></textarea>
+      <div class="print-mirror" id="mirror-texto-guion"></div>
       <div class="actions-row" style="margin-top: 20px;">
         <button type="button" class="btn-success" id="btn-descargar-pdf">📄 Descargar PDF</button>
         <button type="button" class="btn-primary" id="btn-enviar-profe">💾 Guardar</button>
