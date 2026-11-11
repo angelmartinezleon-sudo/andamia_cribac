@@ -21,20 +21,23 @@ document.addEventListener('DOMContentLoaded', () => {
     'select-veredicto', 'texto-argumento', 'texto-contraste', 'texto-guion'
   ];
 
-  // Une el número de grupo y su contraseña para que ningún otro equipo pueda recuperar ni pisar su trabajo
+  function obtenerClaveLimpia() {
+    const inp = document.getElementById('input-clave-grupo');
+    return inp ? inp.value.trim() : '';
+  }
+
   function obtenerGrupoConClave() {
     const grp = (document.getElementById('select-grupo')?.value || 'Grupo 1').trim();
-    const pass = (document.getElementById('input-clave-grupo')?.value || '').trim();
+    const pass = obtenerClaveLimpia();
     return pass ? `${grp}::${pass}` : grp;
   }
 
   function obtenerStorageKey() {
     const cod = (document.getElementById('input-codigo')?.value || 'DEMO').trim().toUpperCase();
-    const grpClave = obtenerGrupoConClave();
-    return `cribac_v9_${cod}_${grpClave}`;
+    const grp = (document.getElementById('select-grupo')?.value || 'Grupo 1').trim();
+    return `cribac_v10_${cod}_${grp}`;
   }
 
-  // Ajusta automáticamente la altura de los cuadros y sincroniza los bloques espejo para el PDF
   function sincronizarCajasTexto() {
     TEXTAREAS_ALUMNO.forEach((id) => {
       const ta = document.getElementById(id);
@@ -108,12 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => irAZona(btn.dataset.target));
   });
 
-  // Control estricto para avanzar de fases y desbloquear la noticia
   [['btn-empezar-c', 'zona-c'], ['btn-abrir-rib', 'zona-rib'], ['btn-abrir-a', 'zona-a'], ['btn-abrir-masc', 'zona-masc'], ['btn-abrir-contamos', 'zona-contamos']].forEach(([idBtn, idZona]) => {
     const b = document.getElementById(idBtn);
     if (b) {
       b.addEventListener('click', (e) => {
-        // 1. Bloqueo de R·I·B (Obliga a rellenar Corazonada)
         if (idBtn === 'btn-abrir-rib') {
           const em = document.getElementById('select-emocion').value;
           const im = document.getElementById('select-impulso').value;
@@ -126,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
           mostrarNoticiaDesbloqueada(true);
         }
 
-        // 2. Bloqueo de MASC (Obliga a pedir IA en Argumento)
         if (idBtn === 'btn-abrir-masc' && !aiConsultadaA) {
           e.preventDefault();
           const boxResp = document.getElementById('ia-resp-A');
@@ -269,12 +269,18 @@ document.addEventListener('DOMContentLoaded', () => {
   async function conectarYRecuperar(esRecuperacionExplicita) {
     const codigo = (document.getElementById('input-codigo').value || 'DEMO').trim().toUpperCase();
     const grupoVisible = document.getElementById('select-grupo').value;
-    const claveGrupo = (document.getElementById('input-clave-grupo')?.value || '').trim();
+    let claveGrupo = obtenerClaveLimpia();
     const estado = document.getElementById('estado-conexion');
 
     if (esRecuperacionExplicita && !claveGrupo) {
-      alert('🔑 Escribid la Contraseña o PIN de vuestro equipo para poder recuperar vuestra entrega de la nube.');
-      return;
+      const pedida = prompt(`🔑 Escribid la contraseña o PIN que pusisteis para ${grupoVisible}:`);
+      if (!pedida || !pedida.trim()) {
+        alert('⚠️ Es necesario introducir la contraseña del equipo para recuperar vuestra entrega de la nube.');
+        return;
+      }
+      claveGrupo = pedida.trim();
+      const inpClave = document.getElementById('input-clave-grupo');
+      if (inpClave) inpClave.value = claveGrupo;
     }
 
     try {
@@ -294,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let cargado = false;
       if (claveGrupo) {
         try {
-          const grupoConClave = obtenerGrupoConClave();
+          const grupoConClave = `${grupoVisible}::${claveGrupo}`;
           const resEntrega = await fetch(`/api/ia?accion=cargar_entrega&codigo=${encodeURIComponent(codigo)}&grupo=${encodeURIComponent(grupoConClave)}`);
           if (resEntrega.ok) {
             const dataE = await resEntrega.json();
@@ -306,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (ex) {}
       }
 
-      if (!cargado) {
+      if (!cargado && !esRecuperacionExplicita) {
         cargarLocal();
       }
 
@@ -320,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } catch (err) {
-      cargarLocal();
+      if (!esRecuperacionExplicita) cargarLocal();
       if (estado) estado.textContent = `✅ Modo local activo (${codigo} - ${grupoVisible})`;
     }
   }
@@ -335,16 +341,16 @@ document.addEventListener('DOMContentLoaded', () => {
     btnRecuperarNube.addEventListener('click', () => conectarYRecuperar(true));
   }
 
-  // Al cambiar de grupo, código o contraseña, carga solo el borrador local que coincida con esa combinación
   document.getElementById('select-grupo')?.addEventListener('change', () => {
     localStorage.setItem('cribac_ultimo_grupo', document.getElementById('select-grupo').value);
+    const inpClave = document.getElementById('input-clave-grupo');
+    if (inpClave) inpClave.value = '';
     cargarLocal();
   });
   document.getElementById('input-codigo')?.addEventListener('change', () => {
     localStorage.setItem('cribac_ultimo_codigo', document.getElementById('input-codigo').value);
     cargarLocal();
   });
-  document.getElementById('input-clave-grupo')?.addEventListener('change', cargarLocal);
 
   document.querySelectorAll('.btn-ia').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -362,7 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // La revisión del argumento (fase A) es obligatoria y NO consume ni se bloquea por los 12 intentos de ayuda
       if (fase !== 'A' && consultasIA >= MAX_IA) {
         if (boxResp) {
           boxResp.textContent = 'Límite de 12 consultas de ayuda alcanzado.';
@@ -408,7 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
           data = await res.json();
         }
 
-        // Solo sumamos al contador de 12 ayudas si NO es la revisión obligatoria de la fase A
         if (fase !== 'A') {
           consultasIA++;
           const contador = document.getElementById('contador-ia');
@@ -444,22 +448,34 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnEnviar) {
     btnEnviar.textContent = '💾 Guardar';
     btnEnviar.addEventListener('click', async () => {
-      const claveGrupo = (document.getElementById('input-clave-grupo')?.value || '').trim();
       const msg = document.getElementById('mensaje-entrega');
+      let claveGrupo = obtenerClaveLimpia();
 
+      // Si no han escrito contraseña arriba, se la pide en ventana emergente y bloquea el guardado si cancelan
       if (!claveGrupo) {
-        alert('🔑 Antes de guardar en la nube, escribid una Contraseña o PIN para vuestro equipo arriba (en la Zona Preparación) para que ningún otro grupo pueda abrir vuestro trabajo.');
-        irAZona('zona-prep');
-        return;
+        const pedida = prompt('🔑 Obligatorio para guardar: Escribid una contraseña o PIN para vuestro equipo (así podréis recuperar vuestra sesión y nadie podrá borrarla):');
+        if (!pedida || !pedida.trim()) {
+          if (msg) msg.textContent = '⚠️ Guardado cancelado: es obligatorio poner una contraseña al equipo.';
+          const inpClave = document.getElementById('input-clave-grupo');
+          if (inpClave) {
+            irAZona('zona-prep');
+            inpClave.focus();
+          }
+          return;
+        }
+        claveGrupo = pedida.trim();
+        const inpClave = document.getElementById('input-clave-grupo');
+        if (inpClave) inpClave.value = claveGrupo;
       }
 
       guardarLocal();
       if (msg) msg.textContent = '📤 Guardando con vuestra contraseña...';
 
+      const grp = (document.getElementById('select-grupo')?.value || 'Grupo 1').trim();
       const payload = {
         accion: 'guardar_entrega',
         codigo: document.getElementById('input-codigo').value.trim().toUpperCase(),
-        grupo: obtenerGrupoConClave(),
+        grupo: `${grp}::${claveGrupo}`,
         roles: `R: ${document.getElementById('rol-r').value} | I: ${document.getElementById('rol-i').value} | B: ${document.getElementById('rol-b').value}`,
         emocion: document.getElementById('select-emocion').value,
         impulso: document.getElementById('select-impulso').value,
@@ -580,6 +596,10 @@ document.addEventListener('DOMContentLoaded', () => {
       sincronizarCajasTexto();
     } catch (e) {}
   }
+
+  // Limpiamos cualquier autocompletado indebido del navegador en la casilla de contraseña al arrancar
+  const inpClaveInicial = document.getElementById('input-clave-grupo');
+  if (inpClaveInicial) inpClaveInicial.value = '';
 
   document.querySelectorAll('input, textarea, select').forEach((el) => {
     if (el.id !== 'input-codigo' && el.id !== 'select-grupo' && el.id !== 'input-clave-grupo') {
