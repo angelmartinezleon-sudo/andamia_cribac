@@ -301,6 +301,16 @@ El texto cita al supuesto "Instituto Internacional de Neurovelocidad Aplicada", 
 
 Al final del artículo se incluye un enlace promocional para descargar una aplicación de pago por 9,99 € al mes.</div>
         <div style="margin-top: 10px; font-size: 0.85rem; color: #475569;">🔗 Fuente: <span id="noticia-enlace">https://ejemplo-noticias-aula.es/musica-doble-velocidad-notas</span></div>
+
+        <!-- BUSCADOR DE DUDAS DE VOCABULARIO O PERSONAJES (SIN SPOILERS DE VERIFICACIÓN) -->
+        <div class="no-print" style="margin-top: 16px; padding-top: 14px; border-top: 1px dashed #fcd34d;">
+          <label for="input-duda-lexica" style="margin-top: 0; font-size: 0.85rem; color: #92400e;">📖 ¿No entendéis una palabra, sigla o no sabéis quién es alguien que se menciona? Preguntad aquí (solo definiciones, sin pistas sobre la noticia):</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
+            <input type="text" id="input-duda-lexica" placeholder="Ej.: ¿Quién es Giorgia Meloni? / ¿Qué significa arancel?" style="flex: 1; min-width: 220px;" />
+            <button type="button" class="btn-ia" data-fase="DUDA" data-campo="input-duda-lexica">❓ Aclarar duda</button>
+          </div>
+          <div class="ia-response" id="ia-resp-DUDA"></div>
+        </div>
       </div>
       
       <div class="subcard" style="margin-bottom: 20px; background: #f0fdf4; border-color: #bbf7d0;">
