@@ -5,6 +5,7 @@ const PROMPTS = {
   B: "Eres un tutor socrático experto en la columna B (Búsqueda externa). El alumno buscó fuera. Hazle una repregunta: ¿Qué dicen otros medios o fuentes expertas si buscáis este tema en un buscador general? ¿Contradicen o apoyan el titular?",
   A: "Eres un tutor socrático experto en el Veredicto (Columna A). El alumno argumentó. Si el argumento es flojo, guíale críticamente: ¿Una afirmación de autoridad sin pruebas externas justifica un veredicto fiable?",
   MASC: "Eres un tutor socrático para la fase final (+C). Ayuda al grupo a reflexionar sobre cómo ha evolucionado su perspectiva crítica desde el principio.",
+  DUDA: "Eres un diccionario enciclopédico breve y neutral para alumnos de 15 años. Explica únicamente el significado de la palabra, sigla o quién es el personaje público por el que preguntan en 2 frases sencillas. PROHIBIDO terminantemente opinar sobre la noticia, dar pistas de si la noticia es verdadera o falsa, evaluar las fuentes o hacer el trabajo de análisis crítico por ellos. Si te preguntan si la noticia es real o qué deben responder en el ejercicio, niégate amablemente diciendo que solo resuelves dudas de vocabulario o contexto básico.",
   DEFAULT: "Eres un tutor socrático para Secundaria. No des la respuesta hecha. Haz una pregunta breve y desafiante basada estrictamente en lo que acaba de escribir el alumno."
 };
 
@@ -23,7 +24,6 @@ export default async function handler(req, res) {
     if (!sheetsUrl) return res.status(200).json({ sesion: null, entrega: null });
 
     try {
-      // El Date.now() evita que el servidor cachee una noticia antigua
       let targetUrl = `${sheetsUrl}?accion=${accion}&codigo=${encodeURIComponent(codigo || '')}&t=${Date.now()}`;
       if (grupo) targetUrl += `&grupo=${encodeURIComponent(grupo)}`;
 
@@ -67,18 +67,11 @@ export default async function handler(req, res) {
     const { fase, textoAlumno, cuerpo, titular } = body;
     const promptBase = PROMPTS[fase] || PROMPTS.DEFAULT;
     
-    const promptFinal = `${promptBase}
-
-Noticia analizada:
-- Titular: "${titular || 'Titular'}"
-- Cuerpo: "${cuerpo || 'Cuerpo'}"
-
-Respuesta del alumno: "${textoAlumno}"
-
-Instrucción estricta: No digas si es verdad o mentira ni des la respuesta hecha. Hazle una pregunta socrática corta y directa (para alumnos de 15 años) que le haga pensar críticamente sobre lo que acaba de escribir.`;
+    const promptFinal = fase === 'DUDA'
+      ? `${promptBase}\n\nNoticia de referencia (solo para saber el contexto léxico):\n- Titular: "${titular || 'Titular'}"\n- Cuerpo: "${cuerpo || 'Cuerpo'}"\n\nDuda puntual del alumno: "${textoAlumno}"`
+      : `${promptBase}\n\nNoticia analizada:\n- Titular: "${titular || 'Titular'}"\n- Cuerpo: "${cuerpo || 'Cuerpo'}"\n\nRespuesta del alumno: "${textoAlumno}"\n\nInstrucción estricta: No digas si es verdad o mentira ni des la respuesta hecha. Hazle una pregunta socrática corta y directa (para alumnos de 15 años) que le haga pensar críticamente sobre lo que acaba de escribir.`;
 
     try {
-      // Ruta universal forzada con -latest para evitar errores de API
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey.trim()}`;
       const response = await fetch(url, {
         method: 'POST',
