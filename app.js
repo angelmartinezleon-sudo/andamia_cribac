@@ -38,6 +38,27 @@ document.addEventListener('DOMContentLoaded', () => {
     return `cribac_v10_${cod}_${grp}`;
   }
 
+  function empaquetarLecturas() {
+    const l1 = document.getElementById('lectura-1')?.value || '';
+    const l2 = document.getElementById('lectura-2')?.value || '';
+    const l3 = document.getElementById('lectura-3')?.value || '';
+    const sin = document.getElementById('sintesis-lectura')?.value || '';
+    return `${l1} ||L|| ${l2} ||L|| ${l3} ||L|| ${sin}`;
+  }
+
+  function desempaquetarLecturas(raw) {
+    if (!raw) return;
+    if (raw.includes('||L||')) {
+      const partes = raw.split('||L||');
+      if (document.getElementById('lectura-1')) document.getElementById('lectura-1').value = (partes[0] || '').trim();
+      if (document.getElementById('lectura-2')) document.getElementById('lectura-2').value = (partes[1] || '').trim();
+      if (document.getElementById('lectura-3')) document.getElementById('lectura-3').value = (partes[2] || '').trim();
+      if (document.getElementById('sintesis-lectura')) document.getElementById('sintesis-lectura').value = partes.slice(3).join('||L||').trim();
+    } else {
+      if (document.getElementById('sintesis-lectura')) document.getElementById('sintesis-lectura').value = raw;
+    }
+  }
+
   function sincronizarCajasTexto() {
     TEXTAREAS_ALUMNO.forEach((id) => {
       const ta = document.getElementById(id);
@@ -240,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.emocion) document.getElementById('select-emocion').value = e.emocion;
     if (e.impulso) document.getElementById('select-impulso').value = e.impulso;
     if (e.corazonada) document.getElementById('texto-corazonada').value = e.corazonada;
-    if (e.lectura_grupo) document.getElementById('sintesis-lectura').value = e.lectura_grupo;
+    if (e.lectura_grupo) desempaquetarLecturas(e.lectura_grupo);
     if (e.texto_r) document.getElementById('texto-r').value = e.texto_r;
     if (e.texto_i) document.getElementById('texto-i').value = e.texto_i;
     if (e.texto_b) document.getElementById('texto-b').value = e.texto_b;
@@ -360,15 +381,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const textoAlumno = campo ? campo.value.trim() : '';
       const boxResp = document.getElementById(`ia-resp-${fase}`);
 
-      if (!textoAlumno || textoAlumno.length < 5) {
+      const minLen = fase === 'DUDA' ? 2 : 5;
+      if (!textoAlumno || textoAlumno.length < minLen) {
         if (boxResp) {
-          boxResp.textContent = '✍️ Escribid primero vuestra propia idea antes de pedir ayuda a la IA.';
+          boxResp.textContent = fase === 'DUDA'
+            ? '✍️ Escribid la palabra o nombre que no entendéis.'
+            : '✍️ Escribid primero vuestra propia idea antes de pedir ayuda a la IA.';
           boxResp.classList.add('visible');
         }
         return;
       }
 
-      if (fase !== 'A' && consultasIA >= MAX_IA) {
+      if (fase !== 'A' && fase !== 'DUDA' && consultasIA >= MAX_IA) {
         if (boxResp) {
           boxResp.textContent = 'Límite de 12 consultas de ayuda alcanzado.';
           boxResp.classList.add('visible');
@@ -413,13 +437,13 @@ document.addEventListener('DOMContentLoaded', () => {
           data = await res.json();
         }
 
-        if (fase !== 'A') {
+        if (fase !== 'A' && fase !== 'DUDA') {
           consultasIA++;
           const contador = document.getElementById('contador-ia');
           if (contador) contador.textContent = consultasIA;
         }
 
-        if (boxResp) boxResp.textContent = '🤖 ' + (data.respuesta || data.error);
+        if (boxResp) boxResp.textContent = (fase === 'DUDA' ? '📖 ' : '🤖 ') + (data.respuesta || data.error);
 
         if (fase === 'A' && !data.error) {
           aiConsultadaA = true;
@@ -451,7 +475,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const msg = document.getElementById('mensaje-entrega');
       let claveGrupo = obtenerClaveLimpia();
 
-      // Si no han escrito contraseña arriba, se la pide en ventana emergente y bloquea el guardado si cancelan
       if (!claveGrupo) {
         const pedida = prompt('🔑 Obligatorio para guardar: Escribid una contraseña o PIN para vuestro equipo (así podréis recuperar vuestra sesión y nadie podrá borrarla):');
         if (!pedida || !pedida.trim()) {
@@ -480,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
         emocion: document.getElementById('select-emocion').value,
         impulso: document.getElementById('select-impulso').value,
         corazonada: document.getElementById('texto-corazonada').value,
-        lectura_grupo: document.getElementById('sintesis-lectura').value,
+        lectura_grupo: empaquetarLecturas(),
         texto_r: document.getElementById('texto-r').value,
         texto_i: document.getElementById('texto-i').value,
         texto_b: document.getElementById('texto-b').value,
@@ -497,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (msg) msg.textContent = '✅ ¡Guardado correctamente con contraseña!';
+        if (msg) msg.textContent = '✅ ¡Guardado correctamente!';
       } catch (e) {
         if (msg) msg.textContent = '✅ ¡Guardado correctamente!';
       }
@@ -597,7 +620,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
   }
 
-  // Limpiamos cualquier autocompletado indebido del navegador en la casilla de contraseña al arrancar
   const inpClaveInicial = document.getElementById('input-clave-grupo');
   if (inpClaveInicial) inpClaveInicial.value = '';
 
